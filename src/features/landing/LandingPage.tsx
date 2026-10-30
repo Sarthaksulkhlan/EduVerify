@@ -1,18 +1,142 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
+  ArrowLeft,
   FileCheck2,
   Lock,
   Building2,
   Scale,
   MessageSquare,
-  Sparkles,
+  ShieldCheck,
+  Play,
+  Pause,
+  Activity,
+  Zap,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { WeaveLogo } from '../../components/ui/WeaveLogo';
 import { TypewriterHeadline } from '../../components/ui/PortalEnhancements';
 import { HeroBackgroundCanvas } from './components/HeroBackgroundCanvas';
 import { LivePipelineStrata } from './components/LivePipelineStrata';
+
+const STRUCTURAL_CONTEXT_PILLARS = [
+  {
+    index: '01.1',
+    tag: 'Institutional Silos',
+    title: 'Fragmented student records.',
+    desc: 'Admissions rosters arrive across disparate spreadsheet schemas, making it difficult to validate program codes, eligibility windows, and identifier integrity before records are committed.',
+    liveBadge: 'LIVE SCHEMA NORMALIZER',
+    liveTone: 'emerald' as const,
+    liveFrames: [
+      {
+        label: 'Ingesting nit_kkr_round3.csv',
+        code: 'ROW #101 → ****-****-4756',
+        status: 'HEADERS NORMALIZED',
+      },
+      {
+        label: 'Blocking raw Aadhaar column',
+        code: 'PRIVACY_GUARD → REJECTED',
+        status: 'MASKING VAULT ACTIVE',
+      },
+      {
+        label: 'Binding sanctioned BTECH-CSE',
+        code: 'AICTE_CAP → 142 / 180 SEATS',
+        status: 'SCHEMA COMMITTED',
+      },
+    ],
+  },
+  {
+    index: '01.2',
+    tag: 'Cross-Campus Collisions',
+    title: 'Inconsistent and duplicate submissions.',
+    desc: 'During multi-round counselling, a student record may appear simultaneously on two institutional rosters. Resolving overlaps requires structured human review rather than opaque automated rejection.',
+    liveBadge: 'LIVE HASH COLLISION RADAR',
+    liveTone: 'crimson' as const,
+    liveFrames: [
+      {
+        label: 'Scanning salted SHA-256 digests',
+        code: 'DIGEST 9f8a..c41e MATCH',
+        status: 'COLLISION DETECTED',
+      },
+      {
+        label: 'Comparing INST-KKR-101 vs INST-DEL-202',
+        code: 'CNF-2026-019 · SIMILARITY 0.99',
+        status: 'ROUTED TO OFFICER',
+      },
+      {
+        label: 'Preserving provisional seat hold',
+        code: 'STU-005 WARN · NO AUTO-DROP',
+        status: 'AWAITING ADJUDICATION',
+      },
+    ],
+  },
+  {
+    index: '01.3',
+    tag: 'Verification Opacity',
+    title: 'Limited visibility into enrolment and verification.',
+    desc: 'Regulators need accurate approved-intake utilization across disciplines, while scholarship and credit bodies need verifiable, minimal-disclosure enrolment attestations without exposing raw identifiers.',
+    liveBadge: 'LIVE ED25519 ATTESTATION STREAM',
+    liveTone: 'gold' as const,
+    liveFrames: [
+      {
+        label: 'Signing minimal-disclosure token',
+        code: 'TOKEN /verify/att-2026-901',
+        status: 'ED25519 SIGNED',
+      },
+      {
+        label: 'National Scholarship Portal check',
+        code: 'ZERO RAW PII EXPOSED',
+        status: 'VERIFIED_ACTIVE',
+      },
+      {
+        label: 'Appending Merkle audit event',
+        code: 'CHAIN HASH 7b2d..90a1',
+        status: 'LEDGER SYNCHRONIZED',
+      },
+    ],
+  },
+];
+
+const WORKFLOW_STAGES = [
+  {
+    step: 'Stage 01',
+    title: 'Submit',
+    desc: 'Institutions import student records via structured CSV batches with required-column preflight checks.',
+    liveCode: 'BAT-2026-003 · CSV PREFLIGHT',
+    liveMetric: '120 Rows Parsed · 0 Aadhaar Leaks',
+    liveDetail: 'Streaming institutional batch upload with instant header & delimiter verification.',
+    accent: '#15803D',
+  },
+  {
+    step: 'Stage 02',
+    title: 'Validate',
+    desc: 'Deterministic rules identify missing or inconsistent information, masking raw APAAR values immediately.',
+    liveCode: 'RULESET 2026.10.v1 · STU-001..006',
+    liveMetric: '112 PASS · 5 WARN · 3 FAIL',
+    liveDetail: 'Evaluating 12-digit APAAR format, sanctioned program caps, and consent flags.',
+    accent: '#B88938',
+  },
+  {
+    step: 'Stage 03',
+    title: 'Review',
+    desc: 'Authorized officers investigate potential cross-institution conflicts with documented rationale.',
+    liveCode: 'QUEUE CNF-2026-019 · HUMAN AUDIT',
+    liveMetric: '2 Competing Rosters Compared',
+    liveDetail: 'Regulator officer inspects withdrawal proof before confirming transfer or duplicate.',
+    accent: '#991B1B',
+  },
+  {
+    step: 'Stage 04',
+    title: 'Verify',
+    desc: 'Authorized claims can be checked through a signed platform-issued Ed25519 attestation.',
+    liveCode: 'ED25519 KEY k1 · /verify/att-2026-901',
+    liveMetric: 'Signature VALID · 0ms PII Exposure',
+    liveDetail: 'Public verifiers confirm active enrolment status using opaque cryptographic tokens.',
+    accent: '#14532D',
+  },
+];
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,89 +144,114 @@ export const LandingPage: React.FC = () => {
     'institution' | 'regulator' | 'verification'
   >('institution');
 
+  // Live animations state for Section 01 (Structural Context) & Section 02 (Deterministic Workflow)
+  const [contextTick, setContextTick] = useState(0);
+  const [activePillarIndex, setActivePillarIndex] = useState(0);
+  const [contextPlaying, setContextPlaying] = useState(true);
+
+  const [activeWorkflowStage, setActiveWorkflowStage] = useState(0);
+  const [workflowPlaying, setWorkflowPlaying] = useState(true);
+
+  useEffect(() => {
+    if (!contextPlaying) return;
+    const timer = window.setInterval(() => {
+      setContextTick((t) => t + 1);
+      setActivePillarIndex((p) => (p + 1) % STRUCTURAL_CONTEXT_PILLARS.length);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, [contextPlaying]);
+
+  useEffect(() => {
+    if (!workflowPlaying) return;
+    const timer = window.setInterval(() => {
+      setActiveWorkflowStage((s) => (s + 1) % WORKFLOW_STAGES.length);
+    }, 2100);
+    return () => window.clearInterval(timer);
+  }, [workflowPlaying]);
+
+  const currentStage = WORKFLOW_STAGES[activeWorkflowStage] || WORKFLOW_STAGES[0];
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F1E8] text-[#302F29]">
-      {/* Top Bar: Institutional Navigation */}
-      <header className="sticky top-0 z-40 bg-[#FFFDF8]/90 backdrop-blur-md border-b border-[#E4DED2] text-[#302F29]">
+      {/* Top Bar: Institutional Navigation (Clean 3-Zone Top Bar Contract) */}
+      <header className="sticky top-0 z-40 bg-[#FFFDF8]/92 backdrop-blur-md border-b border-[#E4DED2] text-[#302F29]">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
-          <Link to="/" aria-label="EduVerify Home" className="shrink-0 flex items-center gap-3">
+          <Link to="/" aria-label="EduVerify Home" className="shrink-0 flex items-center">
             <WeaveLogo />
-            <span className="hidden sm:inline-block font-mono text-[10px] tracking-widest uppercase text-[#8C6D2E] border-l border-[#DFD5C2] pl-3">
-              SIH26263
-            </span>
           </Link>
 
           <nav
             aria-label="Public Navigation"
-            className="hidden md:flex items-center gap-7 text-xs font-medium text-[#77746B]"
+            className="hidden md:flex items-center gap-7 text-xs font-medium text-[#5C564C]"
           >
             <a
               href="#product"
-              className="hover:text-[#302F29] transition-colors whitespace-nowrap shrink-0"
+              className="hover:text-[#23201B] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
-              Platform Overview
+              Structural Context
             </a>
             <a
               href="#how-it-works"
-              className="hover:text-[#302F29] transition-colors whitespace-nowrap shrink-0"
+              className="hover:text-[#23201B] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
-              How it works
+              Deterministic Workflow
+            </a>
+            <a
+              href="#workspace-roles"
+              className="hover:text-[#23201B] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
+            >
+              Role Workspaces
             </a>
             <a
               href="#trust-security"
-              className="hover:text-[#302F29] transition-colors whitespace-nowrap shrink-0"
+              className="hover:text-[#23201B] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
             >
               Security &amp; Trust
             </a>
-            <Link
-              to="/login"
-              className="hover:text-[#302F29] transition-colors whitespace-nowrap shrink-0"
-            >
-              Sign in
-            </Link>
           </nav>
 
           <div className="flex items-center gap-2.5 shrink-0">
             <Link
               to="/login"
-              className="px-3.5 py-2 text-xs font-semibold text-[#23201B] bg-[#FFFDF9] border border-[#D8CEB8] hover:bg-[#F5EFE2] rounded-md transition-colors whitespace-nowrap shrink-0"
+              className="px-4 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#23201B] hover:bg-[#38332B] border border-[#B88938]/50 rounded-md transition-colors whitespace-nowrap shrink-0 shadow-xs"
             >
-              Student / Admin Login
-            </Link>
-            <Link
-              to="/admin/dashboard"
-              className="px-4 py-2 text-xs font-semibold text-[#FFFDF9] bg-[#23201B] hover:bg-[#38332B] border border-[#B88938]/40 rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
-            >
-              AICTE Admin Console
+              Sign In (Student / Admin)
             </Link>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Golden & Champagne Sunlit Editorial Hero Section with Continuous Live Background Canvas */}
+        {/* Emerald-Gold-Crimson Multi-Graded Hero Section with Continuous Live Background Canvas */}
         <section
           className="relative text-[#23201B] border-b border-[#DFD5C2] overflow-hidden py-14 lg:py-20"
           style={{
             background:
-              'radial-gradient(circle at 18% 22%, rgba(212, 175, 55, 0.16) 0%, rgba(197, 160, 89, 0.08) 38%, rgba(246, 241, 231, 0.98) 78%), linear-gradient(135deg, #FAF6EC 0%, #F4EDE0 52%, #EFE6D5 100%)',
+              'radial-gradient(circle at 14% 20%, rgba(20, 83, 45, 0.16) 0%, rgba(21, 128, 61, 0.06) 36%, transparent 65%), radial-gradient(circle at 52% 18%, rgba(212, 175, 55, 0.20) 0%, rgba(184, 137, 56, 0.08) 42%, transparent 70%), radial-gradient(circle at 86% 78%, rgba(153, 27, 27, 0.14) 0%, rgba(185, 28, 28, 0.05) 38%, transparent 68%), linear-gradient(135deg, #FAF6EC 0%, #F3ECE0 50%, #EDE3D2 100%)',
           }}
         >
-          <HeroBackgroundCanvas />
+          <HeroBackgroundCanvas tone="hero" />
 
-          {/* Ambient Golden & Champagne Light Halo Overlays */}
+          {/* Ambient Multi-Color Graded Light Halos (Emerald, Sovereign Gold, Crimson-Garnet) */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-50"
+            className="pointer-events-none absolute -top-24 -left-20 w-96 h-96 rounded-full blur-3xl opacity-60"
             style={{
-              background: 'radial-gradient(circle, rgba(212,175,55,0.28) 0%, rgba(212,175,55,0) 70%)',
+              background: 'radial-gradient(circle, rgba(21,128,61,0.24) 0%, rgba(21,128,61,0) 70%)',
             }}
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-28 right-1/4 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-45"
+            className="pointer-events-none absolute top-12 left-1/3 w-[26rem] h-[26rem] rounded-full blur-3xl opacity-55"
             style={{
-              background: 'radial-gradient(circle, rgba(197,160,89,0.24) 0%, rgba(197,160,89,0) 72%)',
+              background: 'radial-gradient(circle, rgba(212,175,55,0.26) 0%, rgba(212,175,55,0) 72%)',
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-24 right-12 w-[26rem] h-[26rem] rounded-full blur-3xl opacity-50"
+            style={{
+              background: 'radial-gradient(circle, rgba(153,27,27,0.20) 0%, rgba(153,27,27,0) 72%)',
             }}
           />
 
@@ -110,14 +259,15 @@ export const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Hero Editorial Headline & CTAs */}
               <div className="lg:col-span-5 space-y-6">
-                {/* Golden Champagne Editorial Eyebrow Card */}
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-md bg-gradient-to-r from-[#FFFDF9] via-[#FAF3E3] to-[#F5E9CE] border border-[#D4AF37]/45 text-[#7A5B20] text-[11px] font-mono uppercase tracking-[0.16em] shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-[#B88938] animate-ping" />
-                  <Sparkles className="w-3.5 h-3.5 text-[#B88938]" />
-                  <span className="font-semibold">ACADEMIC RECORDS · INSTITUTIONAL TRUST</span>
+                {/* Upgraded Hero Kicker: National Academic Ledger · Institutional Trust */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-gradient-to-r from-[#14532D]/12 via-[#FAF3E3] to-[#991B1B]/10 border border-[#B88938]/55 text-[#23201B] text-[11px] font-mono uppercase tracking-[0.14em] shadow-2xs">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
+                  <span className="font-bold text-[#14532D]">NATIONAL ACADEMIC LEDGER</span>
+                  <span aria-hidden="true" className="text-[#B88938] font-bold">·</span>
+                  <span className="font-semibold text-[#7A5B20]">INSTITUTIONAL TRUST</span>
                 </div>
 
-                {/* Typewriter Hero Headline in Typewriter Font */}
+                {/* Typewriter Hero Headline */}
                 <div className="min-h-[132px] sm:min-h-[148px] flex items-center">
                   <h1
                     className="font-mono font-bold text-[#23201B] tracking-tight leading-[1.14]"
@@ -134,9 +284,9 @@ export const LandingPage: React.FC = () => {
                   </h1>
                 </div>
 
-                <p className="text-base sm:text-lg text-[#5C564C] leading-relaxed max-w-xl">
+                <p className="text-base sm:text-lg text-[#4A453C] leading-relaxed max-w-xl">
                   Bring student records, deterministic APAAR validation, sanctioned intake oversight,
-                  and cryptographic verification into one coherent institutional platform.
+                  and cryptographic verification into one coherent national platform.
                 </p>
 
                 {/* Primary CTAs */}
@@ -156,21 +306,28 @@ export const LandingPage: React.FC = () => {
                     AICTE Admin Console
                   </Link>
                   <Link
-                    to="/admin/assistant"
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-[#7A5B20] bg-[#FAF3E3]/90 border border-[#D4AF37]/40 hover:border-[#B88938] hover:bg-[#F5E9CE] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-2xs"
+                    to="/student/dashboard"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#14532D] bg-[#ECFDF5]/90 border border-[#15803D]/35 hover:bg-[#D1FAE5] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-2xs"
                   >
-                    <MessageSquare className="w-4 h-4 text-[#B88938]" />
+                    <span>Student Portal</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link
+                    to="/admin/assistant"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#7A5B20] bg-[#FAF3E3]/90 border border-[#D4AF37]/40 hover:border-[#B88938] hover:bg-[#F5E9CE] rounded-md transition-colors whitespace-nowrap shrink-0"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-[#B88938]" />
                     <span>Ask Assistant</span>
                   </Link>
                 </div>
 
-                {/* Institutional Trust Badges */}
-                <div className="pt-4 border-t border-[#DFD5C2] text-xs text-[#696358] flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
-                  <span className="text-[#7A5B20] font-semibold">SIH26263 Reference Implementation</span>
+                {/* Unboxed Institutional Metadata */}
+                <div className="pt-4 border-t border-[#DFD5C2] text-xs text-[#5C564C] flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
+                  <span className="text-[#14532D] font-semibold">SIH26263 National Ledger</span>
                   <span aria-hidden="true" className="text-[#B88938]">·</span>
                   <span>Masked APAAR Storage</span>
                   <span aria-hidden="true" className="text-[#B88938]">·</span>
-                  <span>Deterministic Rule Engine</span>
+                  <span className="text-[#991B1B] font-semibold">10m Session Compliance</span>
                 </div>
               </div>
 
@@ -182,120 +339,295 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Section A — The Problem */}
-        <section id="product" className="max-w-6xl mx-auto px-6 py-16 lg:py-20 border-b border-[#E4DED2]">
-          <div className="max-w-2xl">
-            <div className="text-xs font-mono uppercase tracking-widest text-[#77746B]">
-              01 · Structural Context
-            </div>
-            <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#302F29]">
-              Academic data should not be difficult to trust.
-            </h2>
-          </div>
+        {/* Section 01 — Structural Context (Now with Live Interactive Actions & Multi-Color Grading) */}
+        <section
+          id="product"
+          className="relative overflow-hidden border-b border-[#E4DED2] py-16 lg:py-20"
+          style={{
+            background:
+              'radial-gradient(circle at 12% 30%, rgba(21, 128, 61, 0.09) 0%, transparent 45%), radial-gradient(circle at 88% 70%, rgba(153, 27, 27, 0.08) 0%, transparent 45%), linear-gradient(180deg, #F8F4EA 0%, #F4EFE2 100%)',
+          }}
+        >
+          <HeroBackgroundCanvas tone="section" className="opacity-70" />
 
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-[#E4DED2]">
-            <div className="space-y-2.5">
-              <div className="text-xs font-mono text-[#85866B] font-semibold">
-                01.1 · Institutional Silos
+          <div className="relative z-10 max-w-6xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="max-w-2xl">
+                <div className="text-xs font-mono uppercase tracking-widest text-[#14532D] font-semibold">
+                  01 · Structural Context · Live Diagnostic Feed
+                </div>
+                <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#23201B]">
+                  Academic data should not be difficult to trust.
+                </h2>
               </div>
-              <h3 className="font-display text-lg font-semibold text-[#302F29]">
-                Fragmented student records.
-              </h3>
-              <p className="text-sm text-[#77746B] leading-relaxed">
-                Admissions rosters arrive across disparate spreadsheet schemas, making it difficult
-                to validate program codes, eligibility windows, and identifier integrity before
-                records are committed.
-              </p>
+
+              {/* Interactive Live Controls for Section 01 */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActivePillarIndex(
+                      (p) =>
+                        (p - 1 + STRUCTURAL_CONTEXT_PILLARS.length) %
+                        STRUCTURAL_CONTEXT_PILLARS.length
+                    )
+                  }
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#FFFDF9] text-[#23201B] hover:bg-[#EFE8D8] border border-[#D8CEB8] transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-[#8C6520]" />
+                  <span>Prev Pillar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActivePillarIndex((p) => (p + 1) % STRUCTURAL_CONTEXT_PILLARS.length)
+                  }
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#23201B] text-[#FFFDF9] hover:bg-[#38332B] border border-[#B88938]/40 transition-colors cursor-pointer"
+                >
+                  <span>Next Pillar</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContextPlaying((p) => !p)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-semibold bg-[#FFFDF9] text-[#23201B] hover:bg-[#EFE8D8] border border-[#D8CEB8] transition-colors cursor-pointer"
+                >
+                  {contextPlaying ? (
+                    <>
+                      <Pause className="w-3.5 h-3.5 text-[#B88938]" />
+                      <span>Pause Live</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 text-[#15803D]" />
+                      <span>Resume Live</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-2.5 md:border-l md:border-[#E4DED2] md:pl-8">
-              <div className="text-xs font-mono text-[#85866B] font-semibold">
-                01.2 · Cross-Campus Collisions
-              </div>
-              <h3 className="font-display text-lg font-semibold text-[#302F29]">
-                Inconsistent and duplicate submissions.
-              </h3>
-              <p className="text-sm text-[#77746B] leading-relaxed">
-                During multi-round counselling, a student record may appear simultaneously on two
-                institutional rosters. Resolving overlaps requires structured human review rather
-                than opaque automated rejection.
-              </p>
-            </div>
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 border-t border-[#DFD5C2]">
+              {STRUCTURAL_CONTEXT_PILLARS.map((pillar, idx) => {
+                const isFocused = activePillarIndex === idx;
+                const frame = pillar.liveFrames[(contextTick + idx) % pillar.liveFrames.length];
+                const toneAccent =
+                  pillar.liveTone === 'emerald'
+                    ? 'border-[#15803D]/50 bg-gradient-to-br from-[#FFFDF9] via-[#ECFDF5]/60 to-[#F5EFE2]'
+                    : pillar.liveTone === 'crimson'
+                      ? 'border-[#991B1B]/50 bg-gradient-to-br from-[#FFFDF9] via-[#FEF2F2]/65 to-[#F5EFE2]'
+                      : 'border-[#B88938]/60 bg-gradient-to-br from-[#FFFDF9] via-[#FAF3E3]/75 to-[#F5EFE2]';
 
-            <div className="space-y-2.5 md:border-l md:border-[#E4DED2] md:pl-8">
-              <div className="text-xs font-mono text-[#85866B] font-semibold">
-                01.3 · Verification Opacity
-              </div>
-              <h3 className="font-display text-lg font-semibold text-[#302F29]">
-                Limited visibility into enrolment and verification.
-              </h3>
-              <p className="text-sm text-[#77746B] leading-relaxed">
-                Regulators need accurate approved-intake utilization across disciplines, while
-                scholarship and credit bodies need verifiable, minimal-disclosure enrolment
-                attestations without exposing raw identifiers.
-              </p>
+                return (
+                  <div
+                    key={pillar.index}
+                    onClick={() => setActivePillarIndex(idx)}
+                    className={`rounded-xl p-5 border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                      isFocused
+                        ? `${toneAccent} shadow-md -translate-y-0.5`
+                        : 'bg-[#FFFDF9]/90 border-[#E4DED2] hover:border-[#B88938]'
+                    }`}
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-[#7A5B20] font-bold">
+                          {pillar.index} · {pillar.tag}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            pillar.liveTone === 'emerald'
+                              ? 'text-[#15803D]'
+                              : pillar.liveTone === 'crimson'
+                                ? 'text-[#991B1B]'
+                                : 'text-[#8C6520]'
+                          }`}
+                        >
+                          {pillar.liveBadge}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-lg font-semibold text-[#23201B]">
+                        {pillar.title}
+                      </h3>
+                      <p className="text-sm text-[#5C564C] leading-relaxed">{pillar.desc}</p>
+                    </div>
+
+                    {/* Live Action Telemetry Box inside each Structural Context Card */}
+                    <div className="mt-5 p-3 rounded-lg bg-[#1E1B17] text-[#F5EFE2] font-mono text-[11px] space-y-1.5 border border-[#383229]">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-[#E8C87A] flex items-center gap-1.5">
+                          <Activity className="w-3 h-3 text-[#34D399]" />
+                          <span>{frame.label}</span>
+                        </span>
+                        <span className="text-[#86EFAC] font-bold">{frame.status}</span>
+                      </div>
+                      <div className="text-xs font-bold text-[#FFFDF9] tracking-tight">
+                        {frame.code}
+                      </div>
+                      <div className="w-full h-1 bg-[#332E25] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#15803D] via-[#D4AF37] to-[#EF4444] transition-all duration-500"
+                          style={{ width: isFocused ? '100%' : '45%' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* Section B — How EduVerify Works */}
-        <section id="how-it-works" className="bg-[#FBF9F4] border-b border-[#E4DED2] py-16 lg:py-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl">
-              <div className="text-xs font-mono uppercase tracking-widest text-[#77746B]">
-                02 · Deterministic Workflow
+        {/* Section 02 — Deterministic Workflow (Now with Live Interactive State Machine & Multi-Color Grading) */}
+        <section
+          id="how-it-works"
+          className="relative overflow-hidden border-b border-[#E4DED2] py-16 lg:py-20"
+          style={{
+            background:
+              'radial-gradient(circle at 80% 24%, rgba(212, 175, 55, 0.14) 0%, transparent 48%), radial-gradient(circle at 20% 78%, rgba(20, 83, 45, 0.10) 0%, transparent 48%), linear-gradient(135deg, #FBF9F4 0%, #F3ECE0 100%)',
+          }}
+        >
+          <div className="relative z-10 max-w-6xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div className="max-w-2xl">
+                <div className="text-xs font-mono uppercase tracking-widest text-[#7A5B20] font-semibold">
+                  02 · Deterministic Workflow · Live Pipeline Execution
+                </div>
+                <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#23201B]">
+                  From submission to cryptographic verification.
+                </h2>
               </div>
-              <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#302F29]">
-                From submission to verification.
-              </h2>
+
+              {/* Step Back / Next Stage / Play-Pause Controls */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveWorkflowStage(
+                      (s) => (s - 1 + WORKFLOW_STAGES.length) % WORKFLOW_STAGES.length
+                    )
+                  }
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#FFFDF9] text-[#23201B] hover:bg-[#EFE8D8] border border-[#D8CEB8] transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-[#8C6520]" />
+                  <span>Back Stage</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveWorkflowStage((s) => (s + 1) % WORKFLOW_STAGES.length)
+                  }
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[#23201B] text-[#FFFDF9] hover:bg-[#38332B] border border-[#B88938]/40 transition-colors cursor-pointer"
+                >
+                  <span>Next Stage</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkflowPlaying((p) => !p)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-semibold bg-[#FFFDF9] text-[#23201B] hover:bg-[#EFE8D8] border border-[#D8CEB8] transition-colors cursor-pointer"
+                >
+                  {workflowPlaying ? (
+                    <>
+                      <Pause className="w-3.5 h-3.5 text-[#B88938]" />
+                      <span>Pause Flow</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 text-[#15803D]" />
+                      <span>Resume Flow</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Connected 4-Stage Horizontal Timeline on Desktop / Vertical on Mobile */}
-            <ol className="mt-10 grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-              {[
-                {
-                  step: 'Stage 01',
-                  title: 'Submit',
-                  desc: 'Institutions import student records via structured CSV batches with required-column preflight checks.',
-                },
-                {
-                  step: 'Stage 02',
-                  title: 'Validate',
-                  desc: 'Deterministic rules identify missing or inconsistent information, masking raw APAAR values immediately.',
-                },
-                {
-                  step: 'Stage 03',
-                  title: 'Review',
-                  desc: 'Authorized officers investigate potential cross-institution conflicts with documented rationale.',
-                },
-                {
-                  step: 'Stage 04',
-                  title: 'Verify',
-                  desc: 'Authorized claims can be checked through a signed platform-issued Ed25519 attestation.',
-                },
-              ].map((item, idx) => (
-                <li
-                  key={item.step}
-                  className="bg-[#FFFDF8] border border-[#E4DED2] rounded-md p-5 flex flex-col justify-between relative shadow-2xs"
-                >
-                  <div>
-                    <div className="flex items-center justify-between text-xs font-mono text-[#77746B] pb-3 border-b border-[#E4DED2]">
-                      <span>{item.step}</span>
-                      <span className="text-[#85866B] font-semibold">0{idx + 1}</span>
+            {/* Live Stage Progression Ribbon */}
+            <div className="mt-6 h-1.5 w-full bg-[#E5DEC9] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#15803D] via-[#B88938] to-[#991B1B] transition-all duration-500 ease-out"
+                style={{ width: `${((activeWorkflowStage + 1) / WORKFLOW_STAGES.length) * 100}%` }}
+              />
+            </div>
+
+            {/* Connected 4-Stage Interactive Live Timeline */}
+            <ol className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-5 relative">
+              {WORKFLOW_STAGES.map((item, idx) => {
+                const isActive = activeWorkflowStage === idx;
+                const isPassed = idx <= activeWorkflowStage;
+                return (
+                  <li
+                    key={item.step}
+                    onClick={() => setActiveWorkflowStage(idx)}
+                    className={`rounded-xl p-5 flex flex-col justify-between relative transition-all duration-300 cursor-pointer border ${
+                      isActive
+                        ? 'bg-[#FFFDF9] border-[#23201B] shadow-md -translate-y-0.5'
+                        : 'bg-[#FFFDF8]/85 border-[#E4DED2] hover:border-[#B88938]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-xs font-mono pb-3 border-b border-[#E4DED2]">
+                        <span className={isActive ? 'font-bold text-[#23201B]' : 'text-[#77746B]'}>
+                          {item.step}
+                        </span>
+                        <span
+                          className="font-bold px-1.5 py-0.5 rounded text-[10px]"
+                          style={{
+                            backgroundColor: isPassed ? `${item.accent}18` : '#F3EDE0',
+                            color: isPassed ? item.accent : '#77746B',
+                          }}
+                        >
+                          {isActive ? 'EXECUTING LIVE' : `0${idx + 1}`}
+                        </span>
+                      </div>
+                      <h3 className="mt-4 font-display text-base font-bold text-[#23201B]">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1.5 text-xs text-[#5C564C] leading-relaxed">{item.desc}</p>
                     </div>
-                    <h3 className="mt-4 font-display text-base font-semibold text-[#302F29]">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1.5 text-xs text-[#77746B] leading-relaxed">{item.desc}</p>
-                  </div>
-                </li>
-              ))}
+
+                    <div className="mt-4 pt-3 border-t border-[#EBE4D5] font-mono text-[11px] space-y-1">
+                      <div className="text-[10px] text-[#7A5B20] font-semibold">{item.liveCode}</div>
+                      <div className="font-bold text-[#23201B] flex items-center justify-between">
+                        <span>{item.liveMetric}</span>
+                        {isActive && <Zap className="w-3.5 h-3.5 text-[#B88938]" />}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
+
+            {/* Live Stage Execution Telemetry Console */}
+            <div className="mt-6 p-4 rounded-xl bg-[#1E1B17] text-[#F5EFE2] border border-[#383229] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+                  <span className="text-[#E8C87A] font-bold">
+                    {currentStage.step} · {currentStage.title.toUpperCase()}
+                  </span>
+                  <span className="text-[#9A907E]">|</span>
+                  <span className="text-[#86EFAC]">{currentStage.liveCode}</span>
+                </div>
+                <p className="text-xs text-[#D8CEB8]">{currentStage.liveDetail}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-mono text-xs font-bold text-[#FFFDF9] bg-white/10 px-3 py-1.5 rounded border border-[#D4AF37]/30">
+                  {currentStage.liveMetric}
+                </span>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#B88938] text-[#FFFDF9] hover:bg-[#9C7228] transition-colors whitespace-nowrap"
+                >
+                  <span>Run in Portal</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Section C — The Workspace */}
-        <section className="max-w-6xl mx-auto px-6 py-16 lg:py-20 border-b border-[#E4DED2]">
+        <section id="workspace-roles" className="max-w-6xl mx-auto px-6 py-16 lg:py-20 border-b border-[#E4DED2]">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <div className="text-xs font-mono uppercase tracking-widest text-[#77746B]">

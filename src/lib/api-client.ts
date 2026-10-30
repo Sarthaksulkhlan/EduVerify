@@ -1,6 +1,13 @@
-import { getInMemoryAccessToken, setInMemoryAccessToken } from './auth';
+import {
+  getInMemoryAccessToken,
+  setInMemoryAccessToken,
+  getLastActivityTimestamp,
+} from './auth';
 import {
   computeAuditEventHash,
+  evaluateIdleSessionState,
+  IDLE_WARNING_THRESHOLD_MS,
+  IDLE_LOGOUT_THRESHOLD_MS,
   type InstitutionSummary,
   type StudentBatch,
   type StudentRecord,
@@ -58,6 +65,30 @@ async function requestWithRefresh<T>(
   options: RequestInit = {},
   hasRetried = false
 ): Promise<T> {
+  // Authentication Flow Middleware: Enforce 15-minute idle session timeout before protected requests
+  if (!endpoint.startsWith('/auth/') && !endpoint.startsWith('/verify/')) {
+    const idleEval = evaluateIdleSessionState(
+      getLastActivityTimestamp(),
+      Date.now(),
+      IDLE_WARNING_THRESHOLD_MS,
+      IDLE_LOGOUT_THRESHOLD_MS
+    );
+    if (idleEval.shouldRedirectToLogin) {
+      setInMemoryAccessToken(null);
+      window.dispatchEvent(
+        new CustomEvent('weave:session-expired', {
+          detail: { reason: 'IDLE_TIMEOUT_15M' },
+        })
+      );
+      throw new ApiClientError({
+        code: 'SESSION_IDLE_TIMEOUT',
+        message: 'Session expired after 15 minutes of inactivity. Please sign in again.',
+        requestId: `req_idle_${Date.now().toString(36)}`,
+        status: 401,
+      });
+    }
+  }
+
   const token = getInMemoryAccessToken();
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && options.body) {

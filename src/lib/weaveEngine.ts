@@ -923,3 +923,146 @@ export function createApiError(
     },
   };
 }
+
+// ============================================================================
+// Security Compliance: Idle Session Timeout Middleware (10m Warning / 15m Logout)
+// ============================================================================
+export const IDLE_WARNING_THRESHOLD_SECONDS = 10 * 60; // 600s (10 minutes)
+export const IDLE_LOGOUT_THRESHOLD_SECONDS = 15 * 60; // 900s (15 minutes)
+export const IDLE_WARNING_COUNTDOWN_SECONDS =
+  IDLE_LOGOUT_THRESHOLD_SECONDS - IDLE_WARNING_THRESHOLD_SECONDS; // 300s (5 minutes)
+
+export const IDLE_WARNING_THRESHOLD_MS = IDLE_WARNING_THRESHOLD_SECONDS * 1000;
+export const IDLE_LOGOUT_THRESHOLD_MS = IDLE_LOGOUT_THRESHOLD_SECONDS * 1000;
+
+export type IdleSessionStatus = 'ACTIVE' | 'WARNING' | 'EXPIRED';
+
+export interface IdleSessionEvaluation {
+  status: IdleSessionStatus;
+  idleMs: number;
+  idleSeconds: number;
+  secondsUntilWarning: number;
+  secondsUntilLogout: number;
+  shouldShowWarning: boolean;
+  shouldRedirectToLogin: boolean;
+}
+
+export function evaluateIdleSessionState(
+  lastActivityMs: number,
+  nowMs: number,
+  warningThresholdMs: number = IDLE_WARNING_THRESHOLD_MS,
+  logoutThresholdMs: number = IDLE_LOGOUT_THRESHOLD_MS
+): IdleSessionEvaluation {
+  const idleMs = Math.max(0, nowMs - lastActivityMs);
+  const idleSeconds = Math.floor(idleMs / 1000);
+  const warningSeconds = Math.floor(warningThresholdMs / 1000);
+  const logoutSeconds = Math.floor(logoutThresholdMs / 1000);
+
+  const secondsUntilWarning = Math.max(0, warningSeconds - idleSeconds);
+  const secondsUntilLogout = Math.max(0, logoutSeconds - idleSeconds);
+
+  if (idleMs >= logoutThresholdMs) {
+    return {
+      status: 'EXPIRED',
+      idleMs,
+      idleSeconds,
+      secondsUntilWarning: 0,
+      secondsUntilLogout: 0,
+      shouldShowWarning: false,
+      shouldRedirectToLogin: true,
+    };
+  }
+
+  if (idleMs >= warningThresholdMs) {
+    return {
+      status: 'WARNING',
+      idleMs,
+      idleSeconds,
+      secondsUntilWarning: 0,
+      secondsUntilLogout,
+      shouldShowWarning: true,
+      shouldRedirectToLogin: false,
+    };
+  }
+
+  return {
+    status: 'ACTIVE',
+    idleMs,
+    idleSeconds,
+    secondsUntilWarning,
+    secondsUntilLogout,
+    shouldShowWarning: false,
+    shouldRedirectToLogin: false,
+  };
+}
+
+export function formatSessionCountdown(totalSeconds: number): string {
+  const clamped = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(clamped / 60);
+  const seconds = clamped % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+export const SESSION_TIMELINE_TOTAL_SECONDS = 10 * 60; // 600s (10-minute active countdown with minute alerts & auto-logout)
+
+export interface SessionTimelineMilestone {
+  totalSeconds: number;
+  elapsedSeconds: number;
+  remainingSeconds: number;
+  elapsedMinutes: number;
+  remainingMinutesCeiling: number;
+  progressPercent: number;
+  minuteCheckpoints: Array<{
+    minute: number;
+    reached: boolean;
+    active: boolean;
+  }>;
+  minuteAlertText: string;
+  shouldAutoLogout: boolean;
+}
+
+export function evaluateSessionTimelineMilestone(
+  idleSecondsInput: number,
+  totalTimeoutSeconds: number = SESSION_TIMELINE_TOTAL_SECONDS
+): SessionTimelineMilestone {
+  const totalSeconds = Math.max(60, totalTimeoutSeconds);
+  const elapsedSeconds = Math.min(totalSeconds, Math.max(0, Math.floor(idleSecondsInput)));
+  const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const elapsedMinutes = Math.min(totalMinutes, Math.floor(elapsedSeconds / 60));
+  const remainingMinutesCeiling = Math.ceil(remainingSeconds / 60);
+  const progressPercent = Math.max(
+    0,
+    Math.min(100, Math.round((remainingSeconds / totalSeconds) * 100))
+  );
+
+  const minuteCheckpoints = Array.from({ length: totalMinutes }, (_, idx) => {
+    const minuteNumber = idx + 1;
+    return {
+      minute: minuteNumber,
+      reached: elapsedMinutes >= minuteNumber,
+      active: elapsedMinutes === idx && remainingSeconds > 0,
+    };
+  });
+
+  const shouldAutoLogout = remainingSeconds <= 0;
+
+  const minuteAlertText = shouldAutoLogout
+    ? `Session timeout of ${totalMinutes} minutes reached — redirecting to login.`
+    : elapsedMinutes === 0
+      ? `Session Timeout: ${totalMinutes}m policy active (${formatSessionCountdown(remainingSeconds)} left)`
+      : `Minute ${elapsedMinutes}/${totalMinutes} alert: Session timeout is ${totalMinutes} minutes (${remainingMinutesCeiling}m left)`;
+
+  return {
+    totalSeconds,
+    elapsedSeconds,
+    remainingSeconds,
+    elapsedMinutes,
+    remainingMinutesCeiling,
+    progressPercent,
+    minuteCheckpoints,
+    minuteAlertText,
+    shouldAutoLogout,
+  };
+}
+

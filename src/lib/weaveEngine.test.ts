@@ -11,6 +11,11 @@ import {
   computeAuditEventHash,
   verifyAuditChain,
   createApiError,
+  evaluateIdleSessionState,
+  evaluateSessionTimelineMilestone,
+  formatSessionCountdown,
+  IDLE_WARNING_THRESHOLD_MS,
+  IDLE_LOGOUT_THRESHOLD_MS,
   type AuditEvent,
   type AttestationRecord,
 } from './weaveEngine';
@@ -176,3 +181,55 @@ test('Standard API error envelope matches RULEBOOK.md specification', () => {
   assert.equal(err.error.request_id, 'req_01JTEST');
   assert.equal(err.error.details.length, 1);
 });
+
+test('Idle session timeout middleware shows warning after 10 minutes and redirects to login after 15 minutes', () => {
+  const baseTime = 1_700_000_000_000;
+
+  assert.equal(IDLE_WARNING_THRESHOLD_MS, 10 * 60 * 1000);
+  assert.equal(IDLE_LOGOUT_THRESHOLD_MS, 15 * 60 * 1000);
+
+  // 1. At 9 minutes 59 seconds: ACTIVE, no warning
+  const activeState = evaluateIdleSessionState(baseTime, baseTime + (9 * 60 + 59) * 1000);
+  assert.equal(activeState.status, 'ACTIVE');
+  assert.equal(activeState.shouldShowWarning, false);
+  assert.equal(activeState.shouldRedirectToLogin, false);
+  assert.equal(activeState.secondsUntilWarning, 1);
+  assert.equal(activeState.secondsUntilLogout, 301);
+
+  // 2. Exactly at 10 minutes (600s): WARNING modal opens with 5 minutes (300s) remaining until 15m logout
+  const warningAt10Min = evaluateIdleSessionState(baseTime, baseTime + 10 * 60 * 1000);
+  assert.equal(warningAt10Min.status, 'WARNING');
+  assert.equal(warningAt10Min.shouldShowWarning, true);
+  assert.equal(warningAt10Min.shouldRedirectToLogin, false);
+  assert.equal(warningAt10Min.secondsUntilLogout, 300);
+  assert.equal(formatSessionCountdown(warningAt10Min.secondsUntilLogout), '05:00');
+
+  // 3. At 14 minutes 59 seconds (899s): WARNING modal shows 00:01 remaining
+  const warningAt14m59s = evaluateIdleSessionState(baseTime, baseTime + (14 * 60 + 59) * 1000);
+  assert.equal(warningAt14m59s.status, 'WARNING');
+  assert.equal(warningAt14m59s.shouldShowWarning, true);
+  assert.equal(warningAt14m59s.shouldRedirectToLogin, false);
+  assert.equal(warningAt14m59s.secondsUntilLogout, 1);
+  assert.equal(formatSessionCountdown(warningAt14m59s.secondsUntilLogout), '00:01');
+
+  // 4. At 15 minutes (900s): EXPIRED, auto-logout and redirect to login
+  const expiredAt15Min = evaluateIdleSessionState(baseTime, baseTime + 15 * 60 * 1000);
+  assert.equal(expiredAt15Min.status, 'EXPIRED');
+  assert.equal(expiredAt15Min.shouldShowWarning, false);
+  assert.equal(expiredAt15Min.shouldRedirectToLogin, true);
+  assert.equal(expiredAt15Min.secondsUntilLogout, 0);
+  assert.equal(formatSessionCountdown(expiredAt15Min.secondsUntilLogout), '00:00');
+
+  // 5. 10-minute countdown timeline with minute-by-minute alerts and auto-logout at 10m (600s)
+  const timelineAt3Min = evaluateSessionTimelineMilestone(180);
+  assert.equal(timelineAt3Min.elapsedMinutes, 3);
+  assert.equal(timelineAt3Min.remainingSeconds, 420);
+  assert.equal(timelineAt3Min.shouldAutoLogout, false);
+  assert.ok(timelineAt3Min.minuteAlertText.includes('Session timeout is 10 minutes'));
+
+  const timelineAt10Min = evaluateSessionTimelineMilestone(600);
+  assert.equal(timelineAt10Min.remainingSeconds, 0);
+  assert.equal(timelineAt10Min.shouldAutoLogout, true);
+});
+
+

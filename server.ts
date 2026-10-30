@@ -142,44 +142,27 @@ async function startServer() {
     });
   });
 
-  // Synthetic Auth Login (Supports Unique ID Code + Password for Admin & Student Portals)
+  // Synthetic Auth Login
   app.post('/api/v1/auth/login', (req, res) => {
     const reqId = `req_${Date.now().toString(36)}`;
-    const { email = '', uniqueId = '', password = '', loginType = '' } = req.body || {};
-    const identifier = String(uniqueId || email).trim().toLowerCase();
+    const { email = '', password = '' } = req.body || {};
+    const cleanEmail = String(email).trim().toLowerCase();
 
-    if (!identifier || !password || String(password).length < 4) {
+    if (!cleanEmail || !password || String(password).length < 4) {
       res.status(400).json(
         createApiError(
           'INVALID_CREDENTIALS',
-          'Provide a valid Unique ID Code and password.',
+          'Provide a valid synthetic institutional or regulatory email and password.',
           reqId,
-          [{ field: 'uniqueId', reason: 'Unique ID Code and password are required.' }]
+          [{ field: 'email', reason: 'Synthetic demo credentials required.' }]
         )
       );
       return;
     }
 
-    const portalFilter = loginType === 'student' ? 'student' : loginType === 'admin' ? 'admin' : null;
-    const candidates = portalFilter
-      ? SYNTHETIC_DEMO_ACCOUNTS.filter((a) => a.portalType === portalFilter)
-      : SYNTHETIC_DEMO_ACCOUNTS;
-
     const account =
-      candidates.find(
-        (a) =>
-          a.unique_id_code.toLowerCase() === identifier ||
-          a.email.toLowerCase() === identifier ||
-          (a.student_ref && a.student_ref.toLowerCase() === identifier)
-      ) ||
-      SYNTHETIC_DEMO_ACCOUNTS.find(
-        (a) =>
-          a.unique_id_code.toLowerCase() === identifier ||
-          a.email.toLowerCase() === identifier
-      ) ||
-      (portalFilter === 'student'
-        ? SYNTHETIC_DEMO_ACCOUNTS.find((a) => a.portalType === 'student')!
-        : SYNTHETIC_DEMO_ACCOUNTS[0]);
+      SYNTHETIC_DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === cleanEmail) ||
+      SYNTHETIC_DEMO_ACCOUNTS[0];
 
     res.json({
       environment: 'SYNTHETIC',

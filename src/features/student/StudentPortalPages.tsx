@@ -34,7 +34,11 @@ import {
 } from 'recharts';
 import { weaveApiClient, weaveQueryKeys } from '../../lib/api-client';
 import { useAuth } from '../../lib/auth';
-import { AnimatedCounter } from '../../components/ui/PortalEnhancements';
+import {
+  AnimatedCounter,
+  PortalLiveActionSimulator,
+  PortalBackButton,
+} from '../../components/ui/PortalEnhancements';
 import type { StudentDiscrepancyTicket } from '../../lib/weaveEngine';
 
 function useStudentPortalData() {
@@ -369,6 +373,39 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Live Action Section (3rd Section of Student Dashboard): Real-Time APAAR & Credit Telemetry */}
+      <PortalLiveActionSimulator
+        roleBadge="STUDENT IDENTITY LIVE STREAM"
+        heading="Live APAAR Cryptographic Binding & Verification Pulse"
+        subheading="Real-time deterministic checks verifying your masked APAAR digest, credit ledger, and active Ed25519 attestation token."
+        events={[
+          {
+            id: 'stu-live-1',
+            code: 'STU-001 · APAAR VAULT',
+            title: `Masked Identity ${student.apaar_masked} Verified`,
+            detail: 'Salted SHA-256 digest checked against national AICTE institutional roster with zero raw PII exposure.',
+            status: 'VERIFIED',
+            metric: '100% Masked Integrity',
+          },
+          {
+            id: 'stu-live-2',
+            code: 'ABC-CREDIT-SYNC',
+            title: `${course_records.length} Curriculum Courses Synchronized`,
+            detail: `Evaluating ${totalCreditsEarned} registered credits across ${student.program_code} (${student.institution_id}).`,
+            status: 'EVALUATING',
+            metric: `${totalCreditsEarned} Credits Active`,
+          },
+          {
+            id: 'stu-live-3',
+            code: 'ED25519-TOKEN',
+            title: `Public Token ${activeAttestation?.id || 'ATT-2026-901'} Ready`,
+            detail: 'Minimal-disclosure verification URI signed for National Scholarship & credit transfer portals.',
+            status: 'VERIFIED',
+            metric: 'Signature Valid',
+          },
+        ]}
+      />
+
       {/* Animated Course Attendance & Credit Verification Graph (0 -> Destination) */}
       <div className="bg-[#FFFDF9] rounded-xl border border-[#E4DEC9] p-6 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -617,10 +654,13 @@ export const StudentProfilePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-            STUDENT IDENTITY REGISTRY
-          </span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <PortalBackButton fallbackTo="/student/dashboard" label="Back to Overview" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+              STUDENT IDENTITY REGISTRY
+            </span>
+          </div>
           <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
             My Academic Profile
           </h1>
@@ -789,10 +829,13 @@ export const StudentAcademicRecordsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-            ACADEMIC CREDIT &amp; ENROLMENT LEDGER
-          </span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <PortalBackButton fallbackTo="/student/dashboard" label="Back to Overview" />
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+              ACADEMIC CREDIT &amp; ENROLMENT LEDGER
+            </span>
+          </div>
           <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
             My Academic Records
           </h1>
@@ -804,7 +847,7 @@ export const StudentAcademicRecordsPage: React.FC = () => {
         <button
           type="button"
           onClick={handleExportTranscriptCsv}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[#102A43] text-white hover:bg-[#1E3A5F] transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[#102A43] text-white hover:bg-[#1E3A5F] transition-colors cursor-pointer"
         >
           <Download className="w-3.5 h-3.5" />
           <span>Download Records CSV</span>
@@ -853,6 +896,39 @@ export const StudentAcademicRecordsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Action Section (3rd Section of Academic Records): Live Semester Verification Stream */}
+      <PortalLiveActionSimulator
+        roleBadge="TRANSCRIPT VERIFICATION STREAM"
+        heading="Live Course Provenance & Credit Verification Engine"
+        subheading="Inspect real-time course provenance checks between institutional batch uploads and platform-verified credits."
+        events={[
+          {
+            id: 'rec-live-1',
+            code: 'SEM-I · VERIFIED',
+            title: 'Semester I Foundational Credits Locked',
+            detail: 'All Semester I course grades and attendance metrics verified against AICTE curriculum schema.',
+            status: 'VERIFIED',
+            metric: 'PLATFORM_VERIFIED',
+          },
+          {
+            id: 'rec-live-2',
+            code: 'SEM-II · VERIFIED',
+            title: 'Semester II Core Engineering Credits Committed',
+            detail: 'Cryptographic hash linked to student APAAR digest and committed to national credit registry.',
+            status: 'VERIFIED',
+            metric: 'SGPA & Credits Locked',
+          },
+          {
+            id: 'rec-live-3',
+            code: 'SEM-III · INGESTED',
+            title: 'Semester III Active Roster Monitoring',
+            detail: 'Uploaded by NIT Kurukshetra Academic Cell; live attendance and mid-term telemetry active.',
+            status: 'EVALUATING',
+            metric: 'INSTITUTION_UPLOADED',
+          },
+        ]}
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
@@ -982,10 +1058,13 @@ export const StudentApaarPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          AUTOMATED PERMANENT ACADEMIC ACCOUNT REGISTRY
-        </span>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <PortalBackButton fallbackTo="/student/dashboard" label="Back to Overview" />
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            AUTOMATED PERMANENT ACADEMIC ACCOUNT REGISTRY
+          </span>
+        </div>
         <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
           My APAAR ID &amp; Privacy Binding
         </h1>
@@ -1050,6 +1129,39 @@ export const StudentApaarPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Action Section (2nd/3rd Section of APAAR Page): Live Salted Hashing & Masking Pipeline */}
+      <PortalLiveActionSimulator
+        roleBadge="CRYPTOGRAPHIC PRIVACY PIPELINE"
+        heading="Live Salted SHA-256 Digest & Zero-PII Masking Stream"
+        subheading="Continuous verification that raw 12-digit APAAR numbers are masked at ingestion and never persisted in plaintext."
+        events={[
+          {
+            id: 'apaar-live-1',
+            code: 'INGEST-MASK',
+            title: `Raw 12-Digit Input → ${student.apaar_masked}`,
+            detail: 'First 8 digits irreversibly redacted in memory prior to database commit.',
+            status: 'VERIFIED',
+            metric: '0 Plaintext Digits Stored',
+          },
+          {
+            id: 'apaar-live-2',
+            code: 'SHA256-DIGEST',
+            title: 'Salted Deduplication Hash Computed',
+            detail: `Digest ${student.apaar_hash.slice(0, 18)}... compared across participating AICTE institutions.`,
+            status: 'VERIFIED',
+            metric: 'Collision Check Complete',
+          },
+          {
+            id: 'apaar-live-3',
+            code: 'AADHAAR-GUARD',
+            title: 'Strict Aadhaar Column Rejection',
+            detail: 'Deterministic CSV preflight blocks any file containing Aadhaar or UIDAI columns.',
+            status: 'VERIFIED',
+            metric: 'Rulebook §1.4 Active',
+          },
+        ]}
+      />
 
       {/* Rule Evaluation Results on Student's Record */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
@@ -1127,17 +1239,20 @@ export const StudentVerificationPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          THIRD-PARTY &amp; SCHOLARSHIP VERIFICATION
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          My Verification &amp; QR Certificate
-        </h1>
-        <p className="text-sm text-slate-600">
-          Inspect your enrolment verification status, review third-party verification requests, and
-          share your privacy-preserving verification QR token.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            THIRD-PARTY &amp; SCHOLARSHIP VERIFICATION
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            My Verification &amp; QR Certificate
+          </h1>
+          <p className="text-sm text-slate-600">
+            Inspect your enrolment verification status, review third-party verification requests, and
+            share your privacy-preserving verification QR token.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/student/dashboard" label="Back to Overview" />
       </div>
 
       {/* Platform-Issued Verification Certificate & QR Card */}
@@ -1240,6 +1355,40 @@ export const StudentVerificationPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Cryptographic Attestation & QR Token Verifier */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE CRYPTOGRAPHIC ATTESTATION TELEMETRY"
+        title="Ed25519 Signature & Opaque QR Token Verification Stream"
+        subtitle="Real-time verification of certificate signature validity, revocation status, and minimal-disclosure claim scope."
+        theme="student"
+        steps={[
+          {
+            id: 'ver-live-1',
+            code: 'ED25519-SIG',
+            title: 'Cryptographic Signature Integrity',
+            detail: `Attestation ${primaryAttestation?.id || 'ATT-2026-901'} signed by platform key ed25519-aicte-2026-main.`,
+            status: 'VERIFIED',
+            metric: 'Signature Valid',
+          },
+          {
+            id: 'ver-live-2',
+            code: 'OPAQUE-URI',
+            title: 'Zero-PII QR Token Guard',
+            detail: `QR payload encodes only ${verifyPath} with no raw APAAR or unconsented attributes.`,
+            status: 'VERIFIED',
+            metric: 'Zero PII Exposed',
+          },
+          {
+            id: 'ver-live-3',
+            code: 'NSP-SYNC',
+            title: 'Third-Party Verifier Handshake',
+            detail: `${verification_requests.length} external verification requests audited against student consent ledger.`,
+            status: 'ACTIVE',
+            metric: `${verification_requests.length} Verifiers Logged`,
+          },
+        ]}
+      />
 
       {/* Previous & Pending Verification Requests Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -1365,17 +1514,20 @@ export const StudentDiscrepanciesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          STUDENT RECORD CORRECTION WORKFLOW
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Report a Discrepancy
-        </h1>
-        <p className="text-sm text-slate-600">
-          Submit a formal correction request for an institutional upload error, grade mismatch, or
-          cross-institution seat withdrawal clarification.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            STUDENT RECORD CORRECTION WORKFLOW
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Report a Discrepancy
+          </h1>
+          <p className="text-sm text-slate-600">
+            Submit a formal correction request for an institutional upload error, grade mismatch, or
+            cross-institution seat withdrawal clarification.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/student/dashboard" label="Back to Overview" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -1548,6 +1700,40 @@ export const StudentDiscrepanciesPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Discrepancy Routing & Nodal Officer SLA */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE DISCREPANCY ESCALATION TELEMETRY"
+        title="Nodal Officer Review & Audit Chain Escalation Pipeline"
+        subtitle="Interactive step-by-step trace showing how submitted student discrepancy tickets are routed and resolved."
+        theme="student"
+        steps={[
+          {
+            id: 'disc-live-1',
+            code: 'TICKET-INGEST',
+            title: 'Evidence Reference Validation',
+            detail: `Supporting document reference (${supportingDocRef}) linked to student record ${user.student_ref || 'STU-2026-101'}.`,
+            status: 'VERIFIED',
+            metric: 'Doc Ref Linked',
+          },
+          {
+            id: 'disc-live-2',
+            code: 'NODAL-QUEUE',
+            title: 'Institutional Nodal Officer Review',
+            detail: `${discrepancies.length} active or historical discrepancy ticket(s) tracked in institutional queue.`,
+            status: 'ACTIVE',
+            metric: `${discrepancies.length} Ticket(s)`,
+          },
+          {
+            id: 'disc-live-3',
+            code: 'AUDIT-SEAL',
+            title: 'SHA-256 Resolution Append',
+            detail: 'Every status change is cryptographically chained into the student and regulator audit logs.',
+            status: 'VERIFIED',
+            metric: 'Immutable Log',
+          },
+        ]}
+      />
     </div>
   );
 };
@@ -1614,17 +1800,20 @@ export const StudentConsentPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          GRANULAR DATA DISCLOSURE GOVERNANCE
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Consent &amp; Privacy Controls
-        </h1>
-        <p className="text-sm text-slate-600">
-          Manage your information-sharing preferences, inspect consent history, and audit every
-          organisation that has accessed your verification status.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            GRANULAR DATA DISCLOSURE GOVERNANCE
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Consent &amp; Privacy Controls
+          </h1>
+          <p className="text-sm text-slate-600">
+            Manage your information-sharing preferences, inspect consent history, and audit every
+            organisation that has accessed your verification status.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/student/dashboard" label="Back to Overview" />
       </div>
 
       {savedBanner && (
@@ -1732,6 +1921,46 @@ export const StudentConsentPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Live Action Telemetry in Section 2: Real-Time Consent Policy Enforcement */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE CONSENT POLICY ENFORCEMENT"
+        title="Real-Time Purpose-Bound Disclosure Gate"
+        subtitle="Evaluates incoming third-party requests against your active NSP, ABC, and Employer toggle states."
+        theme="student"
+        steps={[
+          {
+            id: 'cns-live-1',
+            code: 'NSP-GATE',
+            title: 'Scholarship Portal Verification Gate',
+            detail: consent.scholarship_portals_enabled
+              ? 'Authorized: NSP can verify masked enrolment status.'
+              : 'Restricted: NSP automated queries blocked by student preference.',
+            status: consent.scholarship_portals_enabled ? 'VERIFIED' : 'REVIEW',
+            metric: consent.scholarship_portals_enabled ? 'Enabled' : 'Disabled',
+          },
+          {
+            id: 'cns-live-2',
+            code: 'ABC-GATE',
+            title: 'Academic Bank of Credits Sync Gate',
+            detail: consent.credit_transfer_abc_enabled
+              ? 'Authorized: Verified semester credit totals synced with masked APAAR digest.'
+              : 'Restricted: Credit transfer sync paused by student.',
+            status: consent.credit_transfer_abc_enabled ? 'VERIFIED' : 'REVIEW',
+            metric: consent.credit_transfer_abc_enabled ? 'Enabled' : 'Disabled',
+          },
+          {
+            id: 'cns-live-3',
+            code: 'EMP-GATE',
+            title: 'Employer Background Check Gate',
+            detail: consent.employer_verification_enabled
+              ? 'Authorized: External employers with token can verify bonafide status.'
+              : 'Restricted: Employer token lookups require explicit approval.',
+            status: consent.employer_verification_enabled ? 'VERIFIED' : 'REVIEW',
+            metric: consent.employer_verification_enabled ? 'Enabled' : 'Restricted',
+          },
+        ]}
+      />
+
       {/* Consent History & Data-Access History */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
@@ -1801,18 +2030,36 @@ export const StudentHistoryPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          TAMPER-EVIDENT STUDENT RECORD LOG
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          My Activity History
-        </h1>
-        <p className="text-sm text-slate-600">
-          Chronological log of batch ingestion, rule validation, attestation issuance, and consent
-          updates linked to your student record.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            TAMPER-EVIDENT STUDENT RECORD LOG
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            My Activity History
+          </h1>
+          <p className="text-sm text-slate-600">
+            Chronological log of batch ingestion, rule validation, attestation issuance, and consent
+            updates linked to your student record.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/student/dashboard" label="Back to Overview" />
       </div>
+
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE HASH-CHAIN VERIFIER"
+        title="Student Activity Hash-Chain Integrity Monitor"
+        subtitle="Verifies that every event in your personal activity history is cryptographically linked with zero tampering."
+        theme="student"
+        steps={activity_history.slice(0, 3).map((ev, idx) => ({
+          id: `hist-live-${idx}`,
+          code: ev.action,
+          title: `${ev.action} (${ev.id})`,
+          detail: `${ev.summary} · Digest ${ev.event_hash.slice(0, 20)}...`,
+          status: 'VERIFIED' as const,
+          metric: ev.created_at.slice(0, 10),
+        }))}
+      />
 
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-2xs space-y-4">
         {activity_history.map((ev) => (
@@ -1863,17 +2110,20 @@ export const StudentHelpPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          STUDENT SUPPORT &amp; PRIVACY GUIDE
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Help &amp; Support
-        </h1>
-        <p className="text-sm text-slate-600">
-          Frequently asked questions regarding APAAR verification, consent controls, and discrepancy
-          resolution.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            STUDENT SUPPORT &amp; PRIVACY GUIDE
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Help &amp; Support
+          </h1>
+          <p className="text-sm text-slate-600">
+            Frequently asked questions regarding APAAR verification, consent controls, and discrepancy
+            resolution.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/student/dashboard" label="Back to Overview" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

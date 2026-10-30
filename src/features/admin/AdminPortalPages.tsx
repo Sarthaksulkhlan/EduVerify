@@ -38,6 +38,9 @@ import { useAuth } from '../../lib/auth';
 import {
   AnimatedCounter,
   setPortalBreadcrumbDetail,
+  onPortalStepBackRequest,
+  PortalBackButton,
+  PortalLiveActionSimulator,
 } from '../../components/ui/PortalEnhancements';
 import {
   CSV_TEMPLATE_CONTENT,
@@ -271,6 +274,40 @@ export const AdminDashboardPage: React.FC = () => {
         </Link>
       </div>
 
+      {/* Live Action Telemetry in Section 2: National Regulatory Rule & Hash-Chain Monitor */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE NATIONAL REGULATORY TELEMETRY"
+        title="Deterministic 9-Stage Batch & Cross-Institution Collision Monitor"
+        subtitle="Real-time regulatory telemetry across participating AICTE institutions, intake caps, and salted SHA-256 APAAR deduplication."
+        theme="admin"
+        steps={[
+          {
+            id: 'adm-dash-1',
+            code: 'STAGE-04 · STU-001',
+            title: 'National APAAR Format & Salted Digest Gate',
+            detail: `${validatedRecordsCount} institutional admission records verified with masked ****-****-XXXX compliance.`,
+            status: 'VERIFIED',
+            metric: `${validatedRecordsCount} Verified`,
+          },
+          {
+            id: 'adm-dash-2',
+            code: 'STAGE-05 · STU-005',
+            title: 'Cross-Institution Duplicate Hash Scanner',
+            detail: `${potentialDuplicates} open cross-campus APAAR hash collision case(s) queued for regulator adjudication.`,
+            status: potentialDuplicates > 0 ? 'REVIEW' : 'VERIFIED',
+            metric: `${potentialDuplicates} Open Collisions`,
+          },
+          {
+            id: 'adm-dash-3',
+            code: 'STAGE-06 · STU-004',
+            title: 'Sanctioned Programme Intake Cap Enforcement',
+            detail: `${totalInstitutions} AICTE campuses monitored against approved programme capacities (${intakeExceptions} at cap).`,
+            status: 'ACTIVE',
+            metric: `${totalInstitutions} Campuses Live`,
+          },
+        ]}
+      />
+
       {/* Charts & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-[#FFFDF9] rounded-xl border border-[#E4DEC9] p-6 shadow-2xs space-y-4">
@@ -402,6 +439,12 @@ export const AdminInstitutionsPage: React.FC = () => {
     return () => setPortalBreadcrumbDetail(null);
   }, [selectedInst]);
 
+  useEffect(() => {
+    return onPortalStepBackRequest(() => {
+      setSelectedInst(null);
+    });
+  }, []);
+
   const instQuery = useQuery({
     queryKey: weaveQueryKeys.institutions(user.role, user.institution_id),
     queryFn: () => weaveApiClient.getInstitutionsOverview(user.role, user.institution_id),
@@ -461,6 +504,7 @@ export const AdminInstitutionsPage: React.FC = () => {
             statuses, and validation outcomes.
           </p>
         </div>
+        <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
       </div>
 
       {/* Search, Filters & Sort Controls */}
@@ -514,6 +558,26 @@ export const AdminInstitutionsPage: React.FC = () => {
           </select>
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Institutional Compliance & Submission Monitor */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE INSTITUTIONAL SUBMISSION TELEMETRY"
+        title="Campus Batch Ingestion & Sanctioned Seat Compliance Stream"
+        subtitle="Real-time status of institutional CSV uploads, programme cap checks, and nodal officer sign-offs."
+        theme="admin"
+        steps={filteredInstitutions.slice(0, 3).map((inst, idx) => {
+          const intake = inst.programs.reduce((s, p) => s + p.approved_intake, 0);
+          const reported = inst.programs.reduce((s, p) => s + p.enrolled_verified, 0);
+          return {
+            id: `inst-live-${idx}`,
+            code: inst.id,
+            title: `${inst.name} (${inst.state})`,
+            detail: `${inst.programs.length} approved programmes · ${reported}/${intake} verified seats (${inst.validation_status || 'Passed'}).`,
+            status: inst.validation_status === 'Requires Review' ? ('REVIEW' as const) : ('VERIFIED' as const),
+            metric: `${reported}/${intake} Seats`,
+          };
+        })}
+      />
 
       {/* Institutions Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -622,13 +686,22 @@ export const AdminInstitutionsPage: React.FC = () => {
                   {selectedInst.university || 'AICTE Approved University'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedInst(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-[#102A43] hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedInst(null)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-[#102A43] transition-colors whitespace-nowrap shrink-0"
+                >
+                  ← Back to Institutions
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedInst(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#102A43] hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Approved Programmes Slice */}
@@ -732,6 +805,12 @@ export const AdminStudentsPage: React.FC = () => {
     return () => setPortalBreadcrumbDetail(null);
   }, [selectedStudent]);
 
+  useEffect(() => {
+    return onPortalStepBackRequest(() => {
+      setSelectedStudent(null);
+    });
+  }, []);
+
   const valQuery = useQuery({
     queryKey: weaveQueryKeys.validationResults(user.role, user.institution_id),
     queryFn: () => weaveApiClient.getValidationResults(user.role, user.institution_id),
@@ -760,17 +839,20 @@ export const AdminStudentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          CENTRAL STUDENT RECORD REGISTRY
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Student Record Management
-        </h1>
-        <p className="text-sm text-slate-600">
-          Search by permitted identifiers, filter by institution, course, academic year, and status,
-          and inspect deterministic rule history. All APAAR IDs are masked in list views.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            CENTRAL STUDENT RECORD REGISTRY
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Student Record Management
+          </h1>
+          <p className="text-sm text-slate-600">
+            Search by permitted identifiers, filter by institution, course, academic year, and status,
+            and inspect deterministic rule history. All APAAR IDs are masked in list views.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
       </div>
 
       {/* Filters */}
@@ -839,6 +921,22 @@ export const AdminStudentsPage: React.FC = () => {
           </select>
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Student Record Rule & Masking Verifier */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE RECORD RULE DIAGNOSTICS"
+        title="Real-Time STU-001 to STU-006 Student Record Evaluation Stream"
+        subtitle="Inspects active student records for masked APAAR compliance, programme eligibility, and duplicate hash collisions."
+        theme="admin"
+        steps={filteredStudents.slice(0, 3).map((stu, idx) => ({
+          id: `stu-adm-live-${idx}`,
+          code: stu.student_ref,
+          title: `${stu.full_name} (${stu.apaar_masked})`,
+          detail: `${stu.institution_id} · ${stu.program_code} · Batch ${stu.batch_id} · Status ${stu.status}.`,
+          status: stu.status === 'VERIFIED' ? ('VERIFIED' as const) : ('REVIEW' as const),
+          metric: stu.status,
+        }))}
+      />
 
       {/* Students Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -928,13 +1026,22 @@ export const AdminStudentsPage: React.FC = () => {
                   {selectedStudent.batch_id}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedStudent(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-[#102A43]"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudent(null)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-[#102A43] transition-colors whitespace-nowrap shrink-0"
+                >
+                  ← Back to Students
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudent(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-[#102A43]"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2.5">
@@ -1103,6 +1210,7 @@ export const AdminValidationAndUploadPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
           <button
             type="button"
             onClick={handleDownloadSampleTemplate}
@@ -1143,6 +1251,40 @@ export const AdminValidationAndUploadPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Interactive 9-Stage Validation Simulator */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE 9-STAGE INGESTION PIPELINE"
+        title="Interactive Batch Preflight, Salted Hashing & Rule Execution"
+        subtitle="Step forward or backward through the live 9-stage validation pipeline before or after ingesting a CSV batch."
+        theme="admin"
+        steps={[
+          {
+            id: 'val-live-1',
+            code: 'STAGES 1–3 · PREFLIGHT',
+            title: 'CSV Schema & Strict Aadhaar Guard',
+            detail: `Inspecting ${filename} for mandatory columns and rejecting any raw Aadhaar/UIDAI fields.`,
+            status: 'VERIFIED',
+            metric: 'Schema Clean',
+          },
+          {
+            id: 'val-live-2',
+            code: 'STAGES 4–6 · RULES',
+            title: 'APAAR Format, Duplicate & Intake Cap Screening',
+            detail: `Evaluating STU-001 through STU-006 across ${students.length} batch records for ${institutionId}.`,
+            status: 'ACTIVE',
+            metric: `${students.length} Rows Checked`,
+          },
+          {
+            id: 'val-live-3',
+            code: 'STAGES 7–9 · COMMIT',
+            title: 'Diagnostic Classification & Ledger Commit',
+            detail: `${students.filter((s) => s.status === 'VERIFIED').length} Green · ${students.filter((s) => s.status !== 'VERIFIED').length} Amber/Red rows classified.`,
+            status: 'VERIFIED',
+            metric: 'Audit Chained',
+          },
+        ]}
+      />
 
       {/* Upload & Preset Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -1390,18 +1532,37 @@ export const AdminDuplicatesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          CROSS-INSTITUTION APAAR HASH COLLISION ADJUDICATION
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Duplicate Detection Centre
-        </h1>
-        <p className="text-sm text-slate-600">
-          Inspect potential duplicate groups, compare competing institutional records side-by-side,
-          and record human adjudication decisions in the audit trail.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            CROSS-INSTITUTION APAAR HASH COLLISION ADJUDICATION
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Duplicate Detection Centre
+          </h1>
+          <p className="text-sm text-slate-600">
+            Inspect potential duplicate groups, compare competing institutional records side-by-side,
+            and record human adjudication decisions in the audit trail.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
       </div>
+
+      {/* Live Action Telemetry in Section 2: Cross-Campus Collision Adjudication */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE COLLISION ADJUDICATION STREAM"
+        title="Cross-Institution Salted SHA-256 APAAR Collision Detector"
+        subtitle="Compares primary and competing institutional submissions without exposing raw 12-digit APAAR numbers."
+        theme="admin"
+        steps={conflicts.slice(0, 3).map((c, idx) => ({
+          id: `dup-live-${idx}`,
+          code: c.id,
+          title: `${c.student_name} (${c.apaar_masked})`,
+          detail: `${c.primary_institution_id} (${c.primary_program_code}) vs ${c.competing_institution_id} (${c.competing_program_code}) · Similarity ${Math.round((c.similarity_score || 0.99) * 100)}%.`,
+          status: c.status === 'RESOLVED' ? ('VERIFIED' as const) : ('REVIEW' as const),
+          metric: c.status,
+        }))}
+      />
 
       {actionFeedback && (
         <div className="p-3.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 text-xs font-medium text-emerald-800">
@@ -1705,17 +1866,20 @@ export const AdminIntakeMonitoringPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#8C6520] font-semibold">
-          SANCTIONED SEAT CAPACITY COMPLIANCE
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#23201B] mt-0.5">
-          Approved Intake Monitoring
-        </h1>
-        <p className="text-sm text-[#5C564C]">
-          Course-wise and institution-wise comparison of AICTE-approved intake vs reported
-          admissions, remaining seats, and utilisation thresholds.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#8C6520] font-semibold">
+            SANCTIONED SEAT CAPACITY COMPLIANCE
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#23201B] mt-0.5">
+            Approved Intake Monitoring
+          </h1>
+          <p className="text-sm text-[#5C564C]">
+            Course-wise and institution-wise comparison of AICTE-approved intake vs reported
+            admissions, remaining seats, and utilisation thresholds.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
       </div>
 
       {/* Charts Grid */}
@@ -1788,6 +1952,22 @@ export const AdminIntakeMonitoringPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Action Telemetry in Section 2: Sanctioned Intake Cap Enforcement */}
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE SANCTIONED INTAKE TELEMETRY"
+        title="Programme-Level Approved Cap vs Verified Enrolment Guard"
+        subtitle="Continuously monitors programme seat utilisation across AICTE-approved institutions under Rule STU-004."
+        theme="admin"
+        steps={intakeRows.slice(0, 3).map((row, idx) => ({
+          id: `intake-live-${idx}`,
+          code: row.program_code,
+          title: `${row.institution_name} · ${row.branch}`,
+          detail: `Approved Intake: ${row.approved_intake} · Verified Admissions: ${row.reported_admissions} · Remaining: ${row.remaining_seats}.`,
+          status: row.status === 'Within Intake' ? ('VERIFIED' as const) : ('REVIEW' as const),
+          metric: `${row.utilisation_pct}% Utilised`,
+        }))}
+      />
 
       {/* Intake Monitoring Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -1884,18 +2064,36 @@ export const AdminVerificationPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
-          THIRD-PARTY &amp; STATUTORY VERIFICATION GOVERNANCE
-        </span>
-        <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
-          Verification Requests Management
-        </h1>
-        <p className="text-sm text-slate-600">
-          Review incoming verification requests from scholarship portals, universities, and
-          authorized employers, inspect evidence sources, and issue verification decisions.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#2563EB] font-semibold">
+            THIRD-PARTY &amp; STATUTORY VERIFICATION GOVERNANCE
+          </span>
+          <h1 className="font-display text-2xl font-bold text-[#102A43] mt-0.5">
+            Verification Requests Management
+          </h1>
+          <p className="text-sm text-slate-600">
+            Review incoming verification requests from scholarship portals, universities, and
+            authorized employers, inspect evidence sources, and issue verification decisions.
+          </p>
+        </div>
+        <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
       </div>
+
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE VERIFICATION REQUEST TELEMETRY"
+        title="External Scholarship, ABC & Employer Verification Queue"
+        subtitle="Real-time governance over third-party verification requests and student consent tokens."
+        theme="admin"
+        steps={requests.slice(0, 3).map((req, idx) => ({
+          id: `ver-adm-live-${idx}`,
+          code: req.id,
+          title: `${req.requesting_organisation} (${req.student_ref})`,
+          detail: `${req.purpose} · Evidence: ${req.evidence_source}.`,
+          status: req.status === 'Verified' ? ('VERIFIED' as const) : ('REVIEW' as const),
+          metric: req.status,
+        }))}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
@@ -2158,14 +2356,17 @@ export const AdminReportsPage: React.FC = () => {
             validation errors, duplicate candidates, and intake exceptions.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleExportReportCsv}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
-        >
-          <Download className="w-4 h-4" />
-          <span>Export Selected Report (CSV)</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
+          <button
+            type="button"
+            onClick={handleExportReportCsv}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+          >
+            <Download className="w-4 h-4" />
+            <span>Export Selected Report (CSV)</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -2256,20 +2457,38 @@ export const AdminAuditLogsPage: React.FC = () => {
           </p>
         </div>
 
-        {chainIntegrity && (
-          <div className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-xs">
-            <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-            <div>
-              <span className="font-bold text-[#102A43] block">
-                SHA-256 Chain Intact ({chainIntegrity.checkedCount} Events Verified)
-              </span>
-              <span className="font-mono text-[10px] text-emerald-700">
-                Zero Tampering Detected
-              </span>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <PortalBackButton fallbackPath="/admin/dashboard" label="Back to Console" />
+          {chainIntegrity && (
+            <div className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-xs">
+              <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+              <div>
+                <span className="font-bold text-[#102A43] block">
+                  SHA-256 Chain Intact ({chainIntegrity.checkedCount} Events Verified)
+                </span>
+                <span className="font-mono text-[10px] text-emerald-700">
+                  Zero Tampering Detected
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      <PortalLiveActionSimulator
+        eyebrow="SECTION 02 · LIVE CRYPTOGRAPHIC AUDIT STREAM"
+        title="SHA-256 Hash-Chain Verification & Event Telemetry"
+        subtitle="Continuously recomputes event digests across the regulatory ledger to guarantee tamper-evidence."
+        theme="admin"
+        steps={filteredEvents.slice(0, 3).map((ev, idx) => ({
+          id: `aud-adm-live-${idx}`,
+          code: ev.id,
+          title: `${ev.action} · ${ev.entity_id}`,
+          detail: `${ev.summary} · Digest ${ev.event_hash.slice(0, 22)}...`,
+          status: 'VERIFIED' as const,
+          metric: ev.actor_role,
+        }))}
+      />
 
       {/* Filter Bar */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">

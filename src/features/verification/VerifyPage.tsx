@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { WeaveLogo } from '../../components/ui/WeaveLogo';
+import { PortalBackButton } from '../../components/ui/PortalEnhancements';
 import { weaveApiClient, weaveQueryKeys, ApiClientError } from '../../lib/api-client';
 
 export const VerifyPage: React.FC = () => {
@@ -36,10 +37,13 @@ export const VerifyPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F6F2] text-[#20241F]">
       {/* Top Bar */}
-      <header className="bg-white border-b border-[#DEDDD5] px-6 h-16 flex items-center justify-between gap-8">
-        <Link to="/" className="shrink-0">
-          <WeaveLogo />
-        </Link>
+      <header className="bg-white border-b border-[#DEDDD5] px-6 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <PortalBackButton fallbackPath="/" label="Back" />
+          <Link to="/" className="shrink-0">
+            <WeaveLogo />
+          </Link>
+        </div>
         <div className="text-xs font-mono text-[#686B65] hidden sm:block">
           PUBLIC CREDENTIAL VERIFICATION PORTAL · /verify/:token
         </div>

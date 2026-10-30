@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   UserCheck,
@@ -21,6 +21,7 @@ import { WeaveLogo } from '../ui/WeaveLogo';
 import {
   PortalAmbientCanvas,
   PortalBreadcrumbs,
+  PortalBackButton,
   IdleSessionTimeoutManager,
 } from '../ui/PortalEnhancements';
 import { useAuth } from '../../lib/auth';
@@ -45,7 +46,8 @@ const STUDENT_NAV_ITEMS: StudentNavItem[] = [
 ];
 
 export const StudentLayout: React.FC = () => {
-  const { user, isStudent, switchRolePersona, logout } = useAuth();
+  const { user, isAuthenticated, sessionExpiredReason, isStudent, switchRolePersona, logout } =
+    useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -53,6 +55,20 @@ export const StudentLayout: React.FC = () => {
     logout();
     navigate('/login');
   };
+
+  const handleIdleTimeoutLogout = () => {
+    logout('IDLE_TIMEOUT_15M');
+    navigate('/login?reason=idle_timeout', { replace: true });
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to={sessionExpiredReason === 'IDLE_TIMEOUT_15M' ? '/login?reason=idle_timeout' : '/login'}
+        replace
+      />
+    );
+  }
 
   // Strict Role Protection: Administrators cannot browse Student Portal unless authenticated as a student
   if (!isStudent) {
@@ -213,10 +229,11 @@ export const StudentLayout: React.FC = () => {
 
         {/* Main Content Column */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Top Header */}
+          {/* Top Header: Left Back + Student Scope | Top-Center Session Timeline | Right Actions */}
           <header className="sticky top-0 z-20 bg-[#FFFDF9]/95 backdrop-blur border-b border-[#E4DEC9] px-4 sm:px-6 py-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
+              {/* Left Zone: Back Button + Student Ref */}
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   aria-label="Open student navigation menu"
@@ -225,6 +242,7 @@ export const StudentLayout: React.FC = () => {
                 >
                   <Menu className="w-4 h-4" />
                 </button>
+                <PortalBackButton fallbackTo="/student/dashboard" label="Back" />
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-[#23201B]">My EduVerify</span>
@@ -233,30 +251,33 @@ export const StudentLayout: React.FC = () => {
                       {user.student_ref || 'STU-2026-101'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#6E675C] hidden sm:block">
+                  <p className="text-[11px] text-[#6E675C] hidden xl:block">
                     Individual Student Verification, Academic Records &amp; Consent Portal
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Idle Session Timeout Security Compliance Manager */}
+              {/* Top-Center Zone: Always-Visible 10m Session Countdown Timeline */}
+              <div className="flex items-center justify-center mx-auto">
                 <IdleSessionTimeoutManager
                   portalName="My EduVerify Student Portal"
                   userRole={user.role}
-                  onLogout={handleLogout}
+                  onLogout={handleIdleTimeoutLogout}
                 />
+              </div>
 
+              {/* Right Zone: Quick Student Actions & Logout */}
+              <div className="flex flex-wrap items-center gap-2">
                 <Link
                   to="/student/verification"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#FAF3E3] text-[#7A5B20] border border-[#DFC99B] hover:bg-[#F3E6C8] transition-colors"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#FAF3E3] text-[#7A5B20] border border-[#DFC99B] hover:bg-[#F3E6C8] transition-colors whitespace-nowrap shrink-0"
                 >
                   <QrCode className="w-3.5 h-3.5 text-[#B88938]" />
                   <span>My Verification QR</span>
                 </Link>
                 <Link
                   to="/student/discrepancies"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#23201B] text-[#FFFDF9] hover:bg-[#38332B] border border-[#B88938]/40 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#23201B] text-[#FFFDF9] hover:bg-[#38332B] border border-[#B88938]/40 transition-colors whitespace-nowrap shrink-0"
                 >
                   <AlertTriangle className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>Report Discrepancy</span>
@@ -264,7 +285,7 @@ export const StudentLayout: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#5C564C] hover:text-[#B91C1C] hover:bg-[#FEF2F2] border border-[#DFD5C2] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#5C564C] hover:text-[#B91C1C] hover:bg-[#FEF2F2] border border-[#DFD5C2] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">Logout</span>

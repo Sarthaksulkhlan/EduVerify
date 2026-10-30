@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff, AlertCircle, ShieldCheck, GraduationCap, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, ShieldCheck, GraduationCap, ArrowRight, Clock, ArrowLeft } from 'lucide-react';
 import { WeaveLogo } from '../../components/ui/WeaveLogo';
+import { HeroBackgroundCanvas } from '../landing/components/HeroBackgroundCanvas';
 import { weaveApiClient, ApiClientError } from '../../lib/api-client';
 import { useAuth } from '../../lib/auth';
 
@@ -22,10 +23,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { loginWithAccount } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { loginWithAccount, sessionExpiredReason } = useAuth();
   const [loginType, setLoginType] = useState<'administration' | 'student'>('administration');
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const isIdleTimeoutRedirect =
+    searchParams.get('reason') === 'idle_timeout' ||
+    sessionExpiredReason === 'IDLE_TIMEOUT_15M';
 
   const {
     register,
@@ -69,96 +75,131 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-[#F8FAFC] text-[#1E293B] px-6 py-12 relative overflow-hidden">
-      {/* Subtle architectural background grid */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 15%, rgba(37, 99, 235, 0.08), transparent 45%), radial-gradient(circle at 80% 85%, rgba(34, 211, 238, 0.08), transparent 45%)',
-        }}
-      />
+    <div
+      className="min-h-screen flex flex-col justify-center items-center text-[#23201B] px-6 py-12 relative overflow-hidden"
+      style={{
+        background:
+          'radial-gradient(circle at 15% 20%, rgba(21, 128, 61, 0.14) 0%, transparent 44%), radial-gradient(circle at 82% 24%, rgba(184, 137, 56, 0.18) 0%, transparent 46%), radial-gradient(circle at 52% 86%, rgba(153, 27, 27, 0.12) 0%, transparent 48%), linear-gradient(135deg, #FAF6EC 0%, #F4EDE0 52%, #EFE6D5 100%)',
+      }}
+    >
+      {/* Continuous Live Emerald-Gold-Crimson Background Canvas */}
+      <HeroBackgroundCanvas />
 
-      <div className="relative z-10 w-full max-w-md bg-[#FFFFFF] border border-slate-200 rounded-xl p-7 sm:p-8 shadow-lg shadow-slate-900/5 space-y-6">
-        {/* Header */}
-        <div className="space-y-2 text-center">
-          <Link to="/" className="inline-block">
-            <WeaveLogo />
-          </Link>
-          <h1 className="font-display text-2xl font-bold text-[#102A43] pt-1">
-            Sign in to EduVerify
-          </h1>
-          <p className="text-xs text-slate-500">
-            {loginType === 'administration'
-              ? 'AICTE Administration Console · Centralised Institutional & Verification Oversight'
-              : 'My EduVerify Student Portal · Personal APAAR & Academic Verification'}
-          </p>
-        </div>
-
-        {/* Two Options: Administration Login & Student Login */}
-        <div
-          role="tablist"
-          aria-label="Login Portal Type"
-          className="grid grid-cols-2 gap-1.5 p-1 bg-[#F8FAFC] border border-slate-200 rounded-lg"
-        >
+      <div className="relative z-10 w-full max-w-md space-y-3">
+        {/* Universal Back Button Above Login Card */}
+        <div className="flex items-center justify-between">
           <button
             type="button"
-            role="tab"
-            aria-selected={loginType === 'administration'}
-            onClick={() => handleSwitchLoginType('administration')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-xs font-semibold transition-all ${
-              loginType === 'administration'
-                ? 'bg-[#102A43] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#102A43]'
-            }`}
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#23201B] bg-[#FFFDF9]/95 hover:bg-[#EFE8D8] border border-[#D8CEB8] shadow-2xs transition-colors cursor-pointer"
           >
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#22D3EE]" />
-            <span>Administration Login</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-[#8C6520]" />
+            <span>Back to Home</span>
           </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={loginType === 'student'}
-            onClick={() => handleSwitchLoginType('student')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-xs font-semibold transition-all ${
-              loginType === 'student'
-                ? 'bg-[#2563EB] text-white shadow-xs'
-                : 'text-slate-600 hover:text-[#102A43]'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5 shrink-0" />
-            <span>Student Login</span>
-          </button>
-        </div>
-
-        {/* Portal destination indicator */}
-        <div
-          className={`px-3.5 py-2.5 rounded-lg border text-xs flex items-center justify-between ${
-            loginType === 'administration'
-              ? 'bg-[#102A43]/5 border-[#102A43]/15 text-[#102A43]'
-              : 'bg-[#2563EB]/5 border-[#2563EB]/20 text-[#1E293B]'
-          }`}
-        >
-          <div>
-            <span className="font-semibold">
-              {loginType === 'administration' ? 'AICTE Admin Console' : 'My EduVerify Portal'}
-            </span>
-            <span className="text-slate-500 ml-1.5 font-mono text-[11px]">
-              {loginType === 'administration' ? '→ /admin/dashboard' : '→ /student/dashboard'}
-            </span>
-          </div>
-          <span
-            className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-semibold ${
-              loginType === 'administration'
-                ? 'bg-[#102A43] text-[#22D3EE]'
-                : 'bg-[#2563EB] text-white'
-            }`}
-          >
-            {loginType === 'administration' ? 'ADMIN ROLE' : 'STUDENT ROLE'}
+          <span className="font-mono text-[11px] text-[#6E675C]">
+            10m Session Compliance Active
           </span>
         </div>
+
+        <div className="w-full bg-[#FFFDF9]/95 backdrop-blur-xs border border-[#DFD2B8] rounded-xl p-7 sm:p-8 shadow-lg space-y-6">
+          {/* Header */}
+          <div className="space-y-2 text-center">
+            <Link to="/" className="inline-block">
+              <WeaveLogo />
+            </Link>
+            <h1 className="font-display text-2xl font-bold text-[#23201B] pt-1">
+              Sign in to EduVerify
+            </h1>
+            <p className="text-xs text-[#5C564C]">
+              {loginType === 'administration'
+                ? 'AICTE Administration Console · Centralised Institutional & Verification Oversight'
+                : 'My EduVerify Student Portal · Personal APAAR & Academic Verification'}
+            </p>
+          </div>
+
+          {/* Two Options: Administration Login & Student Login */}
+          <div
+            role="tablist"
+            aria-label="Login Portal Type"
+            className="grid grid-cols-2 gap-1.5 p-1 bg-[#F5EFE2] border border-[#DFD2B8] rounded-lg"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={loginType === 'administration'}
+              onClick={() => handleSwitchLoginType('administration')}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                loginType === 'administration'
+                  ? 'bg-[#23201B] text-[#FFFDF9] shadow-xs'
+                  : 'text-[#5C564C] hover:text-[#23201B]'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-[#D4AF37]" />
+              <span>Administration Login</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={loginType === 'student'}
+              onClick={() => handleSwitchLoginType('student')}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                loginType === 'student'
+                  ? 'bg-[#14532D] text-[#FFFDF9] shadow-xs'
+                  : 'text-[#5C564C] hover:text-[#23201B]'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 shrink-0 text-[#86EFAC]" />
+              <span>Student Login</span>
+            </button>
+          </div>
+
+          {/* Portal destination indicator */}
+          <div
+            className={`px-3.5 py-2.5 rounded-lg border text-xs flex items-center justify-between ${
+              loginType === 'administration'
+                ? 'bg-[#FAF3E3] border-[#DFC99B] text-[#23201B]'
+                : 'bg-[#ECFDF5] border-[#A7F3D0] text-[#14532D]'
+            }`}
+          >
+            <div>
+              <span className="font-semibold">
+                {loginType === 'administration' ? 'AICTE Admin Console' : 'My EduVerify Portal'}
+              </span>
+              <span className="text-[#5C564C] ml-1.5 font-mono text-[11px]">
+                {loginType === 'administration' ? '→ /admin/dashboard' : '→ /student/dashboard'}
+              </span>
+            </div>
+            <span
+              className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-semibold ${
+                loginType === 'administration'
+                  ? 'bg-[#23201B] text-[#E8C87A]'
+                  : 'bg-[#14532D] text-[#ECFDF5]'
+              }`}
+            >
+              {loginType === 'administration' ? 'ADMIN ROLE' : 'STUDENT ROLE'}
+            </span>
+          </div>
+
+          {/* 10-Minute Session Timeout Security Compliance Banner */}
+          {isIdleTimeoutRedirect && !authError && (
+            <div
+              role="alert"
+              className="p-3.5 bg-amber-50 border border-amber-300 rounded-lg flex items-start gap-2.5 text-xs text-amber-900"
+            >
+              <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
+              <div className="space-y-0.5">
+                <p className="font-semibold text-amber-950">
+                  Session Timeout Reached (10-Minute Policy)
+                </p>
+                <p className="text-amber-800 leading-relaxed">
+                  Your 10-minute session countdown completed and automatically returned you to the
+                  login page for security compliance. Please sign in again to start a fresh 10-minute
+                  session.
+                </p>
+              </div>
+            </div>
+          )}
 
         {authError && (
           <div
@@ -274,10 +315,10 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-2.5 px-4 text-sm font-semibold text-white rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 ${
+            className={`w-full py-2.5 px-4 text-sm font-semibold text-[#FFFDF9] rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer ${
               loginType === 'administration'
-                ? 'bg-[#102A43] hover:bg-[#1E3A5F]'
-                : 'bg-[#2563EB] hover:bg-[#1D4ED8]'
+                ? 'bg-[#23201B] hover:bg-[#38332B] border border-[#B88938]/50'
+                : 'bg-[#14532D] hover:bg-[#166534]'
             }`}
           >
             <span>
@@ -287,9 +328,10 @@ export const LoginPage: React.FC = () => {
                   ? 'Sign in to AICTE Admin Console'
                   : 'Sign in to My EduVerify Portal'}
             </span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
           </button>
         </form>
+        </div>
       </div>
     </div>
   );
