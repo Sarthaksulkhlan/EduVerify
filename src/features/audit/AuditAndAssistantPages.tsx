@@ -24,6 +24,7 @@ import {
   matchKnowledgeIntent,
   type KnowledgeEntry,
 } from '../../data/weaveKnowledgeBase';
+import { PortalBackButton } from '../../components/ui/PortalEnhancements';
 
 /**
  * 1. /app/audit — Chronological Audit Timeline (Section 14)
@@ -335,6 +336,19 @@ export const AssistantPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top Header Bar with Universal Back Button */}
+      <div className="flex items-center justify-between gap-3 pb-2 border-b border-[#E4DEC9]">
+        <div className="flex items-center gap-3">
+          <PortalBackButton fallbackTo="/" label="Back to Previous Page" />
+          <span className="text-xs font-semibold text-[#23201B]">
+            Regulatory &amp; Institutional Assistant
+          </span>
+        </div>
+        <span className="font-mono text-[11px] text-[#6E675C] hidden sm:inline">
+          Deterministic Knowledge Stream Active
+        </span>
+      </div>
+
       {/* Disclaimer Banner: 100% Offline / Deterministic */}
       <div className="p-4 bg-white border border-[#DEDDD5] rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-start gap-3">

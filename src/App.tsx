@@ -37,6 +37,7 @@ import {
   AssistantPage,
   SettingsPage,
 } from './features/audit/AuditAndAssistantPages';
+import { GlobalCursorSpotlight } from './components/ui/PortalEnhancements';
 
 const RoleBasedWorkspaceRedirect: React.FC = () => {
   const { isStudent } = useAuth();
@@ -48,6 +49,8 @@ export function App() {
     <QueryClientProvider client={weaveQueryClient}>
       <AuthProvider>
         <BrowserRouter>
+          {/* Subtle Champagne-Gold Mouse Cursor Spotlight Halo Follower */}
+          <GlobalCursorSpotlight />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />

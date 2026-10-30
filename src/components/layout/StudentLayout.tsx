@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, Link, Navigate, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   UserCheck,
@@ -49,6 +49,7 @@ export const StudentLayout: React.FC = () => {
   const { user, isAuthenticated, sessionExpiredReason, isStudent, switchRolePersona, logout } =
     useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -357,9 +358,11 @@ export const StudentLayout: React.FC = () => {
             </div>
           )}
 
-          {/* Main Outlet */}
+          {/* Main Outlet with Blurry-to-Normal Entrance Transition */}
           <main id="student-main-content" className="flex-1 p-4 sm:p-6 lg:p-8">
-            <Outlet />
+            <div key={location.pathname} className="animate-blur-in">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

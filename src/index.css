@@ -138,3 +138,51 @@
 .text-sage { color: var(--accent-sage); }
 .text-champagne { color: var(--accent-champagne); }
 .border-delicate { border-color: var(--border-delicate); }
+
+/* Blurry-to-Normal Entrance Animations (Hardware-Accelerated 60/120fps) */
+@keyframes blurIn {
+  0% {
+    filter: blur(8px);
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    filter: blur(0px);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating Hero Badge Animations with Breathing Glow */
+@keyframes badgeFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes badgeGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(184, 137, 56, 0.45), 0 2px 10px rgba(184, 137, 56, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 1.5px rgba(21, 128, 61, 0.55), 0 4px 18px rgba(21, 128, 61, 0.25);
+  }
+}
+
+.animate-blur-in {
+  animation: blurIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: filter, opacity, transform;
+}
+
+.animate-badge-float {
+  animation: badgeFloat 3.6s ease-in-out infinite, badgeGlowPulse 4.2s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 90ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 220ms; }

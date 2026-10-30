@@ -259,8 +259,11 @@ export const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Hero Editorial Headline & CTAs */}
               <div className="lg:col-span-5 space-y-6">
-                {/* Upgraded Hero Kicker: National Academic Ledger · Institutional Trust */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-gradient-to-r from-[#14532D]/12 via-[#FAF3E3] to-[#991B1B]/10 border border-[#B88938]/55 text-[#23201B] text-[11px] font-mono uppercase tracking-[0.14em] shadow-2xs">
+                {/* Upgraded Hero Kicker: National Academic Ledger · Institutional Trust with Gentle Continuous Levitation */}
+                <div
+                  data-spotlight-accent="true"
+                  className="animate-badge-float inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-gradient-to-r from-[#14532D]/12 via-[#FAF3E3] to-[#991B1B]/10 border border-[#B88938]/55 text-[#23201B] text-[11px] font-mono uppercase tracking-[0.14em] shadow-2xs transition-transform duration-300 select-none cursor-default"
+                >
                   <ShieldCheck className="w-3.5 h-3.5 text-[#15803D] shrink-0" />
                   <span className="font-bold text-[#14532D]">NATIONAL ACADEMIC LEDGER</span>
                   <span aria-hidden="true" className="text-[#B88938] font-bold">·</span>
@@ -293,28 +296,32 @@ export const LandingPage: React.FC = () => {
                 <div className="pt-2 flex flex-wrap items-center gap-3">
                   <button
                     type="button"
+                    data-spotlight-accent="true"
                     onClick={() => navigate('/login')}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#FFFDF9] bg-[#23201B] hover:bg-[#38332B] border border-[#B88938]/50 rounded-md transition-all whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-[#FFFDF9] bg-[#23201B] hover:bg-[#38332B] border border-[#B88938]/50 rounded-md transition-all whitespace-nowrap shrink-0 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5"
                   >
                     <span>Sign In (Student / Admin)</span>
                     <ArrowRight className="w-4 h-4 text-[#D4AF37]" />
                   </button>
                   <Link
                     to="/admin/dashboard"
-                    className="px-4 py-2.5 text-sm font-semibold text-[#23201B] bg-[#FFFDF9]/95 border border-[#D5C7AA] hover:bg-[#FAF3E3] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-2xs"
+                    data-spotlight-accent="true"
+                    className="px-4 py-2.5 text-sm font-semibold text-[#23201B] bg-[#FFFDF9]/95 border border-[#D5C7AA] hover:bg-[#FAF3E3] rounded-md transition-all whitespace-nowrap shrink-0 shadow-2xs hover:-translate-y-0.5"
                   >
                     AICTE Admin Console
                   </Link>
                   <Link
                     to="/student/dashboard"
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#14532D] bg-[#ECFDF5]/90 border border-[#15803D]/35 hover:bg-[#D1FAE5] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-2xs"
+                    data-spotlight-accent="true"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-[#14532D] bg-[#ECFDF5]/90 border border-[#15803D]/35 hover:bg-[#D1FAE5] rounded-md transition-all whitespace-nowrap shrink-0 shadow-2xs hover:-translate-y-0.5"
                   >
                     <span>Student Portal</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                   <Link
                     to="/admin/assistant"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#7A5B20] bg-[#FAF3E3]/90 border border-[#D4AF37]/40 hover:border-[#B88938] hover:bg-[#F5E9CE] rounded-md transition-colors whitespace-nowrap shrink-0"
+                    data-spotlight-accent="true"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#7A5B20] bg-[#FAF3E3]/90 border border-[#D4AF37]/40 hover:border-[#B88938] hover:bg-[#F5E9CE] rounded-md transition-all whitespace-nowrap shrink-0 hover:scale-[1.03] shadow-2xs"
                   >
                     <MessageSquare className="w-3.5 h-3.5 text-[#B88938]" />
                     <span>Ask Assistant</span>

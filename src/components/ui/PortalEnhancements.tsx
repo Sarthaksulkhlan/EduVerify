@@ -950,4 +950,105 @@ export const PortalLiveActionSimulator: React.FC<{
   );
 };
 
+// ============================================================================
+// 7. GLOBAL CURSOR SPOTLIGHT FOLLOWER (Champagne-Gold Luminous Halo with Lerp Damping)
+// ============================================================================
+export const GlobalCursorSpotlight: React.FC = () => {
+  const spotlightRef = useRef<HTMLDivElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+
+  useEffect(() => {
+    // Only mount on desktop/fine-pointer devices, bypass for touch devices
+    if (typeof window === 'undefined') return;
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isTouch || prefersReducedMotion) return;
+
+    let targetX = -200;
+    let targetY = -200;
+    let currentX = -200;
+    let currentY = -200;
+    let animationFrameId = 0;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      if (!isVisible) setIsVisible(true);
+
+      // Detect if cursor is hovering over interactive elements (buttons, links, chips, inputs)
+      const targetElement = e.target as HTMLElement | null;
+      if (targetElement) {
+        const interactive = targetElement.closest(
+          'button, a, input, select, textarea, [role="button"], [role="tab"], [data-spotlight-accent="true"]'
+        );
+        setIsHovering(Boolean(interactive));
+      }
+    };
+
+    const handlePointerLeave = () => {
+      setIsVisible(false);
+    };
+
+    const handlePointerEnter = () => {
+      setIsVisible(true);
+    };
+
+    // Smooth Spring/Lerp Loop for fluid floating feel
+    const loop = () => {
+      // Lerp with 0.16 damping for smooth organic float
+      currentX += (targetX - currentX) * 0.16;
+      currentY += (targetY - currentY) * 0.16;
+
+      if (spotlightRef.current) {
+        spotlightRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+      }
+
+      animationFrameId = window.requestAnimationFrame(loop);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    document.addEventListener('mouseleave', handlePointerLeave);
+    document.addEventListener('mouseenter', handlePointerEnter);
+    animationFrameId = window.requestAnimationFrame(loop);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('mouseleave', handlePointerLeave);
+      document.removeEventListener('mouseenter', handlePointerEnter);
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [isVisible]);
+
+  return (
+    <div
+      ref={spotlightRef}
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        zIndex: 35,
+        willChange: 'transform, width, height, opacity',
+        opacity: isVisible ? (isHovering ? 0.85 : 0.65) : 0,
+        width: isHovering ? '260px' : '180px',
+        height: isHovering ? '260px' : '180px',
+        transition: 'width 0.28s cubic-bezier(0.16, 1, 0.3, 1), height 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease',
+      }}
+      className="rounded-full blur-2xl"
+    >
+      <div
+        className="w-full h-full rounded-full"
+        style={{
+          background: isHovering
+            ? 'radial-gradient(circle, rgba(212, 175, 55, 0.28) 0%, rgba(184, 137, 56, 0.16) 45%, rgba(20, 83, 45, 0.08) 70%, transparent 80%)'
+            : 'radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(184, 137, 56, 0.10) 50%, transparent 75%)',
+        }}
+      />
+    </div>
+  );
+};
+
+
 
