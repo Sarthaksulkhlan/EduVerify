@@ -1,0 +1,10 @@
+{
+  "name": "EduVerify — APAAR ID-Based Student Data Management & Verification Platform",
+  "description": "AICTE-approved student record ingestion, deterministic validation, cross-institution conflict resolution, Ed25519 enrolment attestations, and role-separated Student & Admin portals (SIH26263).",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

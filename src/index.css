@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --color-edu-navy: #102A43;
+  --color-edu-blue: #2563EB;
+  --color-edu-cyan: #22D3EE;
+  --color-edu-bg: #F8FAFC;
+  --color-edu-surface: #FFFFFF;
+  --color-edu-success: #10B981;
+  --color-edu-warning: #F59E0B;
+  --color-edu-error: #EF4444;
+  --color-edu-text: #1E293B;
+
+  --color-cream-bg: #F5F1E8;
+  --color-ivory: #FBF9F4;
+  --color-porcelain: #FFFDF8;
+  --color-olive-muted: #85866B;
+  --color-moss-deep: #414B38;
+  --color-sage-soft: #A8B19A;
+  --color-taupe-warm: #B7AA98;
+  --color-champagne-accent: #C5AD82;
+  --color-text-dark: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border-delicate: #E2E8F0;
+  
+  --color-brand-primary: #102A43;
+  --color-brand-hover: #2563EB;
+  --color-brand-accent: #22D3EE;
+}
+
+@layer base {
+  :root {
+    /* EduVerify Design System Tokens */
+    --edu-navy: #102A43;
+    --edu-blue: #2563EB;
+    --edu-cyan: #22D3EE;
+    --edu-bg: #F8FAFC;
+    --edu-white: #FFFFFF;
+    --edu-success: #10B981;
+    --edu-warning: #F59E0B;
+    --edu-error: #EF4444;
+    --edu-text: #1E293B;
+
+    /* Legacy compatibility variables */
+    --bg-cream: #F8FAFC;
+    --bg-ivory: #FFFFFF;
+    --bg-porcelain: #FFFFFF;
+    --bg-surface: #FFFFFF;
+    --bg-subtle: #F8FAFC;
+    --bg-stone: #F1F5F9;
+
+    /* Text Hierarchy */
+    --text-dark: #1E293B;
+    --text-ink: #1E293B;
+    --text-muted: #64748B;
+    --text-graphite: #475569;
+
+    /* Accents */
+    --accent-olive: #475569;
+    --accent-moss: #102A43;
+    --accent-sage: #94A3B8;
+    --accent-taupe: #CBD5E1;
+    --accent-champagne: #2563EB;
+    --accent-champagne-hover: #1D4ED8;
+    --accent-champagne-light: #EFF6FF;
+
+    /* Borders */
+    --border-delicate: #E2E8F0;
+    --border-warm: #E2E8F0;
+    --border-subtle: #F1F5F9;
+
+    /* Primary Brand Button / Interactive */
+    --brand-primary: #102A43;
+    --brand-primary-hover: #2563EB;
+    --brand-forest: #102A43;
+    --brand-forest-hover: #2563EB;
+
+    /* Semantic Status */
+    --status-success: #10B981;
+    --status-warning: #F59E0B;
+    --status-error: #EF4444;
+    --status-info: #2563EB;
+
+    --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--edu-bg);
+    color: var(--edu-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-cream);
+    color: var(--text-dark);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom minimal utility helpers */
+.bg-cream { background-color: var(--bg-cream); }
+.bg-ivory { background-color: var(--bg-ivory); }
+.bg-porcelain { background-color: var(--bg-porcelain); }
+.text-dark { color: var(--text-dark); }
+.text-muted-warm { color: var(--text-muted); }
+.text-olive { color: var(--accent-olive); }
+.text-moss { color: var(--accent-moss); }
+.text-sage { color: var(--accent-sage); }
+.text-champagne { color: var(--accent-champagne); }
+.border-delicate { border-color: var(--border-delicate); }

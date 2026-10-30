@@ -1,0 +1,48 @@
+{
+  "version": "0.1.0",
+  "environment": "SYNTHETIC",
+  "rules": [
+    {
+      "code": "RULE-APAAR-FMT",
+      "name": "APAAR Identifier Format & Privacy Guard",
+      "severity": "FAIL",
+      "deterministic": true,
+      "description": "Raw APAAR input must be a 12-digit numeric string not starting with 0 or 1. Rejects Aadhaar-labeled columns and masks display to ****-****-XXXX."
+    },
+    {
+      "code": "RULE-PROG-CODE",
+      "name": "AICTE Sanctioned Program Code",
+      "severity": "FAIL",
+      "deterministic": true,
+      "description": "Program code must match an active AICTE-approved discipline registered for the institution academic year."
+    },
+    {
+      "code": "RULE-DOB-AGE",
+      "name": "Academic Age Eligibility Window",
+      "severity": "FAIL",
+      "deterministic": true,
+      "description": "Candidate age at enrollment year must be within the deterministic range [16, 35] years."
+    },
+    {
+      "code": "RULE-CONSENT-CHK",
+      "name": "Student Data & Attestation Consent",
+      "severity": "WARN",
+      "deterministic": true,
+      "description": "Verifies whether explicit student consent is recorded before platform-issued attestation eligibility."
+    },
+    {
+      "code": "RULE-CROSS-INST",
+      "name": "Cross-Institution Duplicate APAAR Hash",
+      "severity": "WARN",
+      "deterministic": true,
+      "description": "Detects identical irreversible APAAR hash across two institutions or active batches and opens a human review conflict case."
+    },
+    {
+      "code": "RULE-INTAKE-CAP",
+      "name": "AICTE Approved Intake Threshold",
+      "severity": "WARN",
+      "deterministic": true,
+      "description": "Checks whether cumulative verified enrolment for the program stays within AICTE approved intake capacity."
+    }
+  ]
+}

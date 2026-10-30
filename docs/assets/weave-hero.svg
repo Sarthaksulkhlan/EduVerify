@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="title desc">
+  <title id="title">WEAVE — From student records to verifiable enrolment</title>
+  <desc id="desc">A synthetic prototype connects ingestion, validation, human review and attestation. SIH26263.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1829"/>
+      <stop offset="1" stop-color="#113638"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#84d7cc" stroke-opacity=".055"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="440" rx="20" fill="url(#background)"/>
+  <rect width="1280" height="440" rx="20" fill="url(#grid)"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <rect x="56" y="38" width="110" height="28" rx="14" fill="#1c414a"/>
+    <text x="111" y="57" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="1" fill="#96e6d6">SIH26263</text>
+    <text x="1224" y="57" text-anchor="end" font-size="12" letter-spacing="2" fill="#bbccda">SYNTHETIC PROTOTYPE</text>
+    <text x="52" y="153" font-size="78" font-weight="750" letter-spacing="7" fill="#f3f8fc">WEAVE</text>
+    <text x="56" y="202" font-size="30" font-weight="600" fill="#f3f8fc">From student records to verifiable enrolment.</text>
+    <text x="56" y="237" font-size="17" fill="#b6cbd5">Explainable checks. Accountable review. Privacy-aware evidence.</text>
+    <path d="M301 323H357 M591 323H647 M881 323H937" stroke="#6ecbb7" stroke-width="2"/>
+    <g fill="#122c3a" stroke="#37606a">
+      <rect x="56" y="282" width="245" height="82" rx="12"/>
+      <rect x="357" y="282" width="234" height="82" rx="12"/>
+      <rect x="647" y="282" width="234" height="82" rx="12"/>
+      <rect x="937" y="282" width="287" height="82" rx="12"/>
+    </g>
+    <g fill="#86e1cd" font-size="12" font-weight="700" letter-spacing="1">
+      <text x="76" y="307">01 / INGEST</text>
+      <text x="377" y="307">02 / VALIDATE</text>
+      <text x="667" y="307">03 / REVIEW</text>
+      <text x="957" y="307">04 / ATTEST</text>
+    </g>
+    <g fill="#edf5fa" font-size="17">
+      <text x="76" y="340">Bring records together</text>
+      <text x="377" y="340">Explain every result</text>
+      <text x="667" y="340">Resolve conflicts</text>
+      <text x="957" y="340">Issue verifiable evidence</text>
+    </g>
+    <text x="56" y="407" font-size="12" letter-spacing="1.2" fill="#a6bdc8">APPLICATION PROTOTYPE · SYNTHETIC DATA ONLY</text>
+    <text x="1224" y="407" text-anchor="end" font-size="12" letter-spacing="1.2" fill="#a6bdc8">STUDENT DATA MANAGEMENT + VERIFICATION</text>
+  </g>
+</svg>

@@ -1,0 +1,45 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Node / frontend
+node_modules/
+apps/web/node_modules/
+apps/web/dist/
+apps/web/.vite/
+*.tsbuildinfo
+
+# Python / backend
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build / reports
+coverage/
+htmlcov/
+*.log
+*.sqlite3
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Docker
+*.tar
+
+# Misc temporary
+tmp/
+.cache/
