@@ -78,15 +78,16 @@ async function startServer() {
 
   // Optional same-origin proxy to the FastAPI backend. Keep it before the demo
   // routes so live mode can never fall through to in-memory fixture responses.
-  const fastApiUrl = process.env.WEAVE_FASTAPI_URL || viteEnv.WEAVE_FASTAPI_URL;
-  const liveMode = (process.env.VITE_API_MODE || viteEnv.VITE_API_MODE) === 'live';
+  // Supports Vercel service binding FASTAPI_URL, WEAVE_FASTAPI_URL, or local fallback.
+  const fastApiUrl = process.env.FASTAPI_URL || process.env.WEAVE_FASTAPI_URL || viteEnv.WEAVE_FASTAPI_URL;
+  const liveMode = (process.env.VITE_API_MODE || viteEnv.VITE_API_MODE) === 'live' || Boolean(process.env.FASTAPI_URL);
   app.use('/api/v1', async (req, res, next) => {
     if (!liveMode) return next();
     if (!fastApiUrl) {
       res.status(503).json(
         createApiError(
           'BACKEND_NOT_CONFIGURED',
-          'Live mode requires WEAVE_FASTAPI_URL. Demo API responses are disabled.',
+          'Live mode requires FASTAPI_URL or WEAVE_FASTAPI_URL. Demo API responses are disabled.',
           `req_${Date.now().toString(36)}`
         )
       );
